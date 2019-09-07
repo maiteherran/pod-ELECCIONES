@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="tpe-client" />
+        <module name="tpe-server" />
+        <module name="tpe-api" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="tpe-api" target="1.8" />
+      <module name="tpe-client" target="1.8" />
+      <module name="tpe-parent" target="1.8" />
+      <module name="tpe-server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
