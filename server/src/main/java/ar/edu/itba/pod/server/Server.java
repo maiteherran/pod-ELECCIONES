@@ -8,5 +8,8 @@ public class Server {
 
     public static void main(String[] args) {
         logger.info("tpe Server Starting ...");
+
+        GenericServiceImpl elections = new GenericServiceImpl();
+
     }
 }
