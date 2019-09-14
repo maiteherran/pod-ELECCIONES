@@ -12,6 +12,10 @@
   <name>tpe-client</name>
   <dependencies>
     <dependency>
+      <groupId>org.jeasy</groupId>
+      <artifactId>easy-props</artifactId>
+    </dependency>
+    <dependency>
       <groupId>ar.edu.itba.pod</groupId>
       <artifactId>tpe-api</artifactId>
       <version>1.0-SNAPSHOT</version>
