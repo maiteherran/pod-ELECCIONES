@@ -58,6 +58,10 @@ public class Province {
 
     public TreeSet<MutablePair<Party, Double>> getResultsAV (int choice, Party loser) {
 
+        if (choice == 2 || choice == 3) {
+            resultsAV.removeIf(pair -> pair.getLeft().equals(loser));
+        }
+
         for (PollingStation station: pollingStations) {
 
             GenericServiceImpl.addResults(station.getResultsAV(choice, loser), resultsAV);

@@ -67,10 +67,10 @@ public class GenericServiceImpl {
 
         TreeSet<MutablePair<Party, Double>> results = new TreeSet<>(comparator);
         boolean finalResults = false;
-        return getNationalResultsRec(results, 1, finalResults);
+        return getNationalResultsRec(results, 1, finalResults, null);
     }
 
-    private TreeSet<MutablePair<Party, Double>> getNationalResultsRec (TreeSet<MutablePair<Party, Double>> results, int choice, boolean finalResults) {
+    private TreeSet<MutablePair<Party, Double>> getNationalResultsRec (TreeSet<MutablePair<Party, Double>> results, int choice, boolean finalResults, Party loser) {
 
         if (finalResults || choice > 3) {
             return results;
@@ -78,15 +78,15 @@ public class GenericServiceImpl {
 
         for (Province p: provinces) {
 
-            TreeSet<MutablePair<Party, Double>> resultsProv = p.getResultsAV(choice, results.isEmpty() ? null : results.pollFirst().getLeft());
+            TreeSet<MutablePair<Party, Double>> resultsProv = p.getResultsAV(choice, loser);
             addResults(resultsProv, results);
         }
 
         if (!results.isEmpty() && results.last().getRight() >= 50) {
-            return getNationalResultsRec(results, choice, true);
+            return getNationalResultsRec(results, choice, true, loser);
         }
 
-        return getNationalResultsRec(results, choice + 1, finalResults);
+        return getNationalResultsRec(results, choice + 1, finalResults, choice >= 3 ? loser : results.pollFirst().getLeft());
     }
 
     public Province getProvince (ProvinceName name) throws NoSuchProvinceException {

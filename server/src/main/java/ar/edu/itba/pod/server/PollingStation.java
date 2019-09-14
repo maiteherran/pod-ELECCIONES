@@ -62,9 +62,9 @@ public class PollingStation {
         /*inscribedUsers.removeIf(e -> e.getState() == InscriptionState.optout);*/
 
         ArrayList<MutablePair<Party, Double>> changedVotes = new ArrayList<>();
-        resultsAV.addAll(getResultsFPTP());
 
         if (choice == 1) {
+            resultsAV.addAll(getResultsFPTP());
             return resultsAV;
         }
 
