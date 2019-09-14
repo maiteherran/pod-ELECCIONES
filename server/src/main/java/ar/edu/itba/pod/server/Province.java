@@ -20,6 +20,7 @@ public class Province {
     private List<PollingStation> pollingStations = new ArrayList<>();
     private TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
     private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
+    private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
     private ProvinceName name;
 
     public Province (ProvinceName name) {
@@ -43,6 +44,7 @@ public class Province {
 
             PollingStation p = new PollingStation(vote.getPollingStation());
             p.addVote(vote);
+            pollingStations.add(p);
         }
     }
 
@@ -68,4 +70,11 @@ public class Province {
         return resultsSTV;
     }
 
+    public TreeSet<MutablePair<Party, Double>> getResultsFPTP () {
+
+        for (PollingStation station: pollingStations) {
+            GenericServiceImpl.addResults(station.getResultsFPTP(), resultsFPTP);
+        }
+        return resultsFPTP;
+    }
 }

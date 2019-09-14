@@ -18,25 +18,35 @@ public class Vote {
         this.province = province;
 
         /*  queremos que la lista tenga 3 lugares,
-            donde el indice representa la prioridad del partido político,
-            aunque el voto sea en blanco o se hayan votado a menos partidos
-            (en ese caso el partido politico va a aparecer como un voto en blanco)
+        donde el indice representa la prioridad del partido político,
+        aunque el voto sea en blanco o se hayan votado a menos partidos
+        (en ese caso el partido politico va a aparecer como un voto en blanco)
          **/
         switch (vote.size()) {
 
             case 1:
                 this.vote = vote;
-                vote.add(Party.BLANK);
-                vote.add(Party.BLANK);
+                this.vote.add(Party.BLANK);
+                this.vote.add(Party.BLANK);
                 break;
             case 2:
+                if (vote.get(0) == vote.get(1)) {
+                    this.vote = null;
+                    break;
+                }
                 this.vote = vote;
-                vote.add(Party.BLANK);
+                this.vote.add(Party.BLANK);
                 break;
             case 3:
+                if (vote.get(0) == vote.get(1) || vote.get(0) == vote.get(2) || vote.get(1) == vote.get(2)) {
+                    this.vote = null;
+                    break;
+                }
                 this.vote = vote;
                 break;
-
+            default:
+                this.vote = null;
+                break;
         }
 
     }
@@ -61,10 +71,11 @@ public class Vote {
         return vote.get(2);
     }
 
-    public Party getChoice (int choice) throws InvalidChoiceException {
+    public Party getChoice (int choice) {
 
         if (choice <= 0 || choice > 3) {
-            throw new InvalidChoiceException("Invalid choice: choice should be a number between 1 and 3.");
+            /*throw new InvalidChoiceException("Invalid choice: choice should be a number between 1 and 3.");*/
+            return Party.BLANK;
         }
         return vote.get(choice-1);
     }

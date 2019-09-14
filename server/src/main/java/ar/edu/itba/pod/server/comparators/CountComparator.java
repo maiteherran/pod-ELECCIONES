@@ -8,6 +8,11 @@ import java.util.Comparator;
 public class CountComparator implements Comparator<MutablePair<Party, Double>> {
     @Override
     public int compare(MutablePair<Party, Double> o1, MutablePair<Party, Double> o2) {
-        return Double.compare(o1.right, o2.right);
+
+        int compare = Double.compare(o1.right, o2.right);
+        if (compare == 0) {
+            return 1;
+        }
+        return compare;
     }
 }
