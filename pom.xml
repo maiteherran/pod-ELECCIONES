@@ -13,11 +13,17 @@
     <module>client</module>
   </modules>
   <properties>
+    <org.jeasy.version>2.0.1</org.jeasy.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
   </properties>
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.jeasy</groupId>
+        <artifactId>easy-props</artifactId>
+        <version>${org.jeasy.version}</version>
+      </dependency>
       <dependency>
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-all</artifactId>
