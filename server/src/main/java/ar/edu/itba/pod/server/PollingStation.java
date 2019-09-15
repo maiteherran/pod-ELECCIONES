@@ -61,8 +61,6 @@ public class PollingStation {
         /*results.forEach(pair -> System.out.println("PARTY: " + pair.getLeft() + " VOTES: " + Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%"));*/
         /*inscribedUsers.removeIf(e -> e.getState() == InscriptionState.optout);*/
 
-        ArrayList<MutablePair<Party, Double>> changedVotes = new ArrayList<>();
-
         if (choice == 1) {
             resultsAV.addAll(getResultsFPTP());
             return resultsAV;
@@ -70,15 +68,13 @@ public class PollingStation {
 
         votes.stream().filter(v -> v.getChoice(choice-1).equals(loser)).forEach(
                 vote -> {
-                    Optional<MutablePair<Party, Double>> maybeChangedVote = changedVotes.stream().filter
+                    Optional<MutablePair<Party, Double>> res = resultsAV.stream().filter
                             (c -> c.getLeft().equals(vote.getChoice(choice))).findFirst();
-                    if (!maybeChangedVote.isPresent()) {
-                        changedVotes.add(new MutablePair<>(vote.getChoice(choice), (double) 1/votes.size()));
-                    } else {
-                        maybeChangedVote.get().setRight(maybeChangedVote.get().getRight() + 1/votes.size());
-                    }
+                    res.ifPresent(partyDoubleMutablePair -> partyDoubleMutablePair.setRight(partyDoubleMutablePair.getRight() + 1.0 / (double) votes.size()));
                 }
         );
+
+        resultsAV.removeIf(pair -> pair.getLeft().equals(loser));
 
         /*try {
 
@@ -107,15 +103,6 @@ public class PollingStation {
              *//*
             e.printStackTrace();
         }*/
-
-        resultsAV.removeIf(pair -> pair.getLeft().equals(loser));
-
-        resultsAV.forEach(
-                result -> {
-                    Optional<MutablePair<Party, Double>> toAdd = changedVotes.stream().filter(ch -> ch.getLeft().equals(result.getLeft())).findFirst();
-                    toAdd.ifPresent(partyDoubleMutablePair -> result.setRight(result.getRight() + partyDoubleMutablePair.getRight()));
-                }
-        );
 
         /*while (iteratorAV.hasNext()) {
 
