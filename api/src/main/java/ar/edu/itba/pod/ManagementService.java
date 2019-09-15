@@ -7,7 +7,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface ManagementService extends Remote {
-    ElectionState startElection() throws RemoteException, InvalidStateException;
+    ElectionState startElection () throws RemoteException, InvalidStateException;
     ElectionState getElectionState() throws RemoteException;
     ElectionState endElection() throws RemoteException, InvalidStateException;
 }
