@@ -6,14 +6,9 @@ package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.server.comparators.CountComparator;
 import ar.edu.itba.pod.server.enums.Party;
-import ar.edu.itba.pod.server.exceptions.InvalidChoiceException;
-import ar.edu.itba.pod.server.exceptions.NoWinnerException;
-import javafx.util.Pair;
 import org.apache.commons.lang3.tuple.MutablePair;
-import sun.tools.tree.DoubleExpression;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class PollingStation {
 
@@ -21,7 +16,6 @@ public class PollingStation {
     private List<Vote> votes = new ArrayList<>();
     private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
     private int votesFPTPCount;
-    private TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
 
     public PollingStation (int id) {
         this.id = id;
@@ -46,83 +40,13 @@ public class PollingStation {
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
 
-        for (int i=votesFPTPCount; i<votes.size(); i++) {
+        for (int i = votesFPTPCount; i < getNumberOfVotes(); i++) {
             addVoteToParty(votes.get(i), votes.get(i).getFirstChoice());
         }
 
-        votesFPTPCount = votes.size();
+        votesFPTPCount = getNumberOfVotes();
 
         return resultsFPTP;
-    }
-
-    public TreeSet<MutablePair<Party, Double>> getResultsAV (int choice, Party loser) {
-
-        /*Optional<Province> maybeProvince = provinces.stream().filter(p -> p.getName().equals(province)).findFirst();*/
-        /*results.forEach(pair -> System.out.println("PARTY: " + pair.getLeft() + " VOTES: " + Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%"));*/
-        /*inscribedUsers.removeIf(e -> e.getState() == InscriptionState.optout);*/
-
-        if (choice == 1) {
-            resultsAV.addAll(getResultsFPTP());
-            return resultsAV;
-        }
-
-        votes.stream().filter(v -> v.getChoice(choice-1).equals(loser)).forEach(
-                vote -> {
-                    Optional<MutablePair<Party, Double>> res = resultsAV.stream().filter
-                            (c -> c.getLeft().equals(vote.getChoice(choice))).findFirst();
-                    res.ifPresent(partyDoubleMutablePair -> partyDoubleMutablePair.setRight(partyDoubleMutablePair.getRight() + 1.0 / (double) votes.size()));
-                }
-        );
-
-        resultsAV.removeIf(pair -> pair.getLeft().equals(loser));
-
-        /*try {
-
-            for (Vote vote: votes) {
-
-                found = false;
-                if (vote.getChoice(choice-1) == loser) {
-
-                    for (MutablePair<Party, Double> changedVote: changedVotes) {
-
-                        if (changedVote.getLeft() == vote.getChoice(choice)) {
-                            changedVote.setRight( changedVote.getRight() + 1/votes.size());
-                            found = true;
-                        }
-
-                    }
-                    if (!found) {
-                        changedVotes.add(new MutablePair<>(vote.getChoice(choice), (double) 1/votes.size()));
-                    }
-                }
-            }
-        } catch (InvalidChoiceException e) {
-
-            *//*
-             * nunca deberíamos llegar a este punto
-             *//*
-            e.printStackTrace();
-        }*/
-
-        /*while (iteratorAV.hasNext()) {
-
-            MutablePair<Party, Double> pairResult = iteratorAV.next();
-            if (pairResult.getLeft() == loser) {
-                *//* lo marcamos como "eliminado" *//*
-                pairResult.setRight(0.0);
-                pairResult.setLeft(Party.BLANK);
-            } else {
-                for (MutablePair<Party, Double> pairToAdd: changedVotes) {
-                    if (pairToAdd.getLeft() == pairResult.getLeft()) {
-                        pairResult.setRight(pairResult.getRight() + pairToAdd.getRight());
-                        break;   *//* todo: esta bien esto? *//*
-                    }
-                }
-            }
-
-        }*/
-
-        return resultsAV;
     }
 
     private void addVoteToParty (Vote vote, Party party) {
@@ -134,5 +58,9 @@ public class PollingStation {
             MutablePair<Party, Double> newVote = new MutablePair<>(vote.getFirstChoice(),  (1.0) / (double) votes.size());
             resultsFPTP.add(newVote);
         }
+    }
+
+    public void countVotes(VoteCounter counter) {
+        votes.forEach(counter::addVote);
     }
 }

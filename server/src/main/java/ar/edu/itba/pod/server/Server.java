@@ -42,24 +42,31 @@ public class Server {
             vote1.add(parties.get(rand.nextInt(13)));
             try {
                 if (!elections.addVote(1, ProvinceName.JUNGLE, vote1)) {
-                    System.out.println("Error en el voto");
+                    System.out.println("Error 1 en el voto");
                 }
             } catch (IllegalVoteException e) {
                 e.printStackTrace();
-                System.out.println("Error en el voto");
+                System.out.println("Error 2 en el voto");
             }
         }
 
         AtomicReference<Double> sum = new AtomicReference<>(0.0);
 
-        System.out.println("\nFPTP SISTEM:\n");
-        elections.printResults(elections.queryResults());
-        elections.queryResults().forEach(res -> sum.updateAndGet(v -> v + res.right));
-        System.out.println("TOTAL = " + sum);
-        sum.updateAndGet(v -> v = 0.0);
+        //System.out.println("\nFPTP SISTEM:\n");
+        //elections.printResults(elections.queryResults());
+        //elections.queryResults().forEach(res -> sum.updateAndGet(v -> v + res.right));
+        //System.out.println("TOTAL = " + sum);
+        //sum.updateAndGet(v -> v = 0.0);
         System.out.println("\nAV SISTEM:\n");
         elections.printResults(elections.getNationalResults());
         elections.getNationalResults().forEach(res -> sum.updateAndGet(v -> v + res.right));
         System.out.println("TOTAL = " + sum);
+        System.out.println("\nSTV SISTEM:\n");
+        try {
+            elections.printResults(elections.getProvinceResults(ProvinceName.JUNGLE));
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+        elections.getNationalResults().forEach(res -> sum.updateAndGet(v -> v + res.right));
     }
 }

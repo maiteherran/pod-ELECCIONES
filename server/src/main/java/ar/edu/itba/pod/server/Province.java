@@ -7,7 +7,6 @@ package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.server.enums.Party;
 import ar.edu.itba.pod.server.enums.ProvinceName;
-import javafx.util.Pair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import ar.edu.itba.pod.server.comparators.CountComparator;
 
@@ -18,13 +17,12 @@ import java.util.TreeSet;
 public class Province {
 
     private List<PollingStation> pollingStations = new ArrayList<>();
-    private TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
     private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
     private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
     private ProvinceName name;
 
     public Province (ProvinceName name) {
-        this.name=name;
+        this.name = name;
     }
 
     public void addVote(Vote vote) {
@@ -56,29 +54,20 @@ public class Province {
         return name;
     }
 
-    public TreeSet<MutablePair<Party, Double>> getResultsAV (int choice, Party loser) {
-
-        if (choice == 2 || choice == 3) {
-            resultsAV.removeIf(pair -> pair.getLeft().equals(loser));
-        }
-
-        for (PollingStation station: pollingStations) {
-
-            GenericServiceImpl.addResults(station.getResultsAV(choice, loser), resultsAV);
-        }
-        return resultsAV;
-    }
-
-    public TreeSet<MutablePair<Party, Double>> getResultsSTV () {
-
-        return resultsSTV;
+    public void countVotes (VoteCounter counter) {
+        pollingStations.forEach(station -> station.countVotes(counter));
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP () {
-
         for (PollingStation station: pollingStations) {
             GenericServiceImpl.addResults(station.getResultsFPTP(), resultsFPTP);
         }
         return resultsFPTP;
+    }
+
+    public TreeSet<MutablePair<Party, Double>> getResultsSTV () {
+        VoteCounter counter = new VoteCounter();
+        countVotes(counter);
+        return counter.getResultsSTV();
     }
 }

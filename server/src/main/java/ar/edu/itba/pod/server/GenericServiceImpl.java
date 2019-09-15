@@ -6,7 +6,6 @@ import ar.edu.itba.pod.server.enums.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
 import ar.edu.itba.pod.server.exceptions.NoSuchPollingStationException;
 import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
-import javafx.util.Pair;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
@@ -14,8 +13,6 @@ import java.util.*;
 public class GenericServiceImpl {
 
     private List<Province> provinces = new ArrayList<>();
-    private CountComparator comparator = new CountComparator();
-
 
     public GenericServiceImpl () {
 
@@ -44,13 +41,11 @@ public class GenericServiceImpl {
     }
 
     public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name) throws NoSuchProvinceException {
-
         Province p = getProvince(name);
         return p.getResultsSTV();
     }
 
     public TreeSet<MutablePair<Party, Double>> getPollingStationResults (PollingStation id, ProvinceName name) throws NoSuchPollingStationException, NoSuchProvinceException {
-
         Province p = getProvince(name);
         for (PollingStation station: p.getPollingStations()) {
             return station.getResultsFPTP();
@@ -63,40 +58,16 @@ public class GenericServiceImpl {
      * Donde se elegirá a un partido político ganador para ocupar un cargo
      * ejecutivo nacional, mediante el sistema AV.
      */
-    public TreeSet<MutablePair<Party, Double>> getNationalResults () {
-
-        TreeSet<MutablePair<Party, Double>> results = new TreeSet<>(comparator);
-        boolean finalResults = false;
-        return getNationalResultsRec(results, 1, finalResults, null);
-    }
-
-    private TreeSet<MutablePair<Party, Double>> getNationalResultsRec (TreeSet<MutablePair<Party, Double>> results, int choice, boolean finalResults, Party loser) {
-
-        if (finalResults || choice > 3) {
-            return results;
-        }
-
-        for (Province p: provinces) {
-
-            TreeSet<MutablePair<Party, Double>> resultsProv = p.getResultsAV(choice, loser);
-            addResults(resultsProv, results);
-        }
-
-        if (!results.isEmpty() && results.last().getRight() >= 50) {
-            return getNationalResultsRec(results, choice, true, loser);
-        }
-
-        return getNationalResultsRec(results, choice + 1, finalResults, choice >= 3 ? loser : results.pollFirst().getLeft());
+    public TreeSet<MutablePair<Party, Double>> getNationalResults() {
+        VoteCounter counter = new VoteCounter();
+        provinces.forEach(province -> province.countVotes(counter));
+        return counter.getResultsAV();
     }
 
     public Province getProvince (ProvinceName name) throws NoSuchProvinceException {
-
         for (Province p: provinces) {
-
             if (p.getName().equals(name)) {
-
                 return p;
-
             }
         }
 
@@ -138,7 +109,6 @@ public class GenericServiceImpl {
     }
 
     public TreeSet<MutablePair<Party, Double>> queryResults() {
-
         TreeSet<MutablePair<Party, Double>> finalResults = new TreeSet<>(new CountComparator());
 
         for (Province p: provinces) {
