@@ -3,6 +3,7 @@ package ar.edu.itba.pod.server;
 import ar.edu.itba.pod.server.enums.Party;
 import ar.edu.itba.pod.server.enums.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
+import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +41,8 @@ public class GenericServiceConcurrencyTest {
 
     private final ArrayList<ProvinceName> provinceNames = new ArrayList<>();
 
+    private final ArrayList<Party> parties = new ArrayList<>();
+
     @Before
     public final void before () {
         genericService = new GenericServiceImpl();
@@ -59,25 +62,78 @@ public class GenericServiceConcurrencyTest {
         provinceNames.add(ProvinceName.JUNGLE);
         provinceNames.add(ProvinceName.SAVANNAH);
         provinceNames.add(ProvinceName.TUNDRA);
+        parties.add(Party.JACKALOPE);
+        parties.add(Party.GORILLA);
+        parties.add(Party.LYNX);
+        parties.add(Party.LEOPARD);
+        parties.add(Party.OWL);
+        parties.add(Party.BUFFALO);
+        parties.add(Party.TARSIER);
+        parties.add(Party.TIGER);
+        parties.add(Party.TURTLE);
+        parties.add(Party.WHITE_GORILLA);
+        parties.add(Party.WHITE_TIGER);
+        parties.add(Party.SNAKE);
+        parties.add(Party.MONKEY);
 
     }
 
     private final Runnable election = () -> {
 
         Random rand = new Random();
+        int numberOfVotes = VOTES_COUNT;
 
+        /*
+        Para FPTP:
         partyCounts.forEach( (party, count) -> {
 
             ArrayList<Party> vote = new ArrayList<>();
             vote.add(party);
-            for (int i = 0; i < count/THREAD_COUNT; i++) {
+            int i;
+            for (i = 0; i < count/THREAD_COUNT; i++) {
                 try {
-                    genericService.addVote(rand.nextInt(1000), provinceNames.get(rand.nextInt(2)), vote);
+                    genericService.addVote(rand.nextInt(1000), provinceNames.get(rand.nextInt(3)), vote);
                 } catch (IllegalVoteException e) {
                     System.out.println(e.toString());
                 }
             }
+        });*/
+        partyCounts.forEach( (party, count) -> {
+
+            ArrayList<Party> vote = new ArrayList<>(rand.nextInt(4));
+            Party party2, party3;
+            int pollingStation = rand.nextInt(1000);
+            ProvinceName provinceName = provinceNames.get(rand.nextInt(3));
+
+            vote.add(party);
+
+            for (int i=0; i < count; i++) {
+
+                switch (vote.size()) {
+
+                    case 0:
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        vote.add(parties.get(rand.nextInt(13)));
+                        break;
+                    case 3:
+                        vote.add(parties.get(rand.nextInt(13)));
+                        vote.add(parties.get(rand.nextInt(13)));
+                        break;
+                }
+
+                try {
+                    genericService.addVote(pollingStation, provinceName, vote);
+                } catch (IllegalVoteException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
         });
+
     };
 
     private final ExecutorService pool = Executors.newFixedThreadPool(THREAD_COUNT);
@@ -96,11 +152,115 @@ public class GenericServiceConcurrencyTest {
 
         TreeSet<MutablePair<Party, Double>> results = genericService.queryResults();
         results.forEach(pair -> {
-            //Assert.assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, 0.001);
+            //assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, 0.001);
         });
+    }
+
+    @Test
+    public final void countingAVVotes () throws InterruptedException {
+
+        final Thread[] threads = new Thread[THREAD_COUNT];
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            threads[i] = new Thread(election, "thread" + i);
+            threads[i].run();
+        }
+        for (int j = 0; j < THREAD_COUNT; j++) {
+            threads[j].join();
+        }
+
+    }
+
+    private void debbuging(TreeSet<MutablePair<Party, Double>> results) throws NoSuchProvinceException {
+
+        Province jungle = genericService.getProvince(ProvinceName.JUNGLE);
+        Province tundra = genericService.getProvince(ProvinceName.TUNDRA);
+        Province savannah = genericService.getProvince(ProvinceName.SAVANNAH);
+        AtomicReference<Integer> acum = new AtomicReference<>(0);
+        Map<Party, Integer> resultsMap = new HashMap<>();
+        resultsMap.put(Party.GORILLA, 0);
+        resultsMap.put(Party.LEOPARD, 0);
+        resultsMap.put(Party.TURTLE, 0);
+        resultsMap.put(Party.OWL, 0);
+        resultsMap.put(Party.TIGER, 0);
+        resultsMap.put(Party.TARSIER, 0);
+        resultsMap.put(Party.MONKEY, 0);
+        resultsMap.put(Party.LYNX, 0);
+        resultsMap.put(Party.WHITE_TIGER, 0);
+        resultsMap.put(Party.WHITE_GORILLA, 0);
+        resultsMap.put(Party.SNAKE, 0);
+        resultsMap.put(Party.JACKALOPE, 0);
+        resultsMap.put(Party.BUFFALO, 0);
+
+        System.out.println("\nPROVINCE: JUNGLE\n");
+        jungle.getPollingStations().forEach(st -> {
+            acum.updateAndGet(v -> v + st.getNumberOfVotes());
+            st.getVotes().forEach(vote -> {
+                int acum1 = resultsMap.get(vote.getFirstChoice());
+                resultsMap.put(vote.getFirstChoice(), acum1 + 1);
+            });
+        });
+        resultsMap.forEach( (party, votes) -> {
+            System.out.println("PARTY: " + party + " COUNT: " + votes);
+        });
+        System.out.println("Number of votes -> " + acum);
+
+        acum.set(0);
+        resultsMap.put(Party.GORILLA, 0);
+        resultsMap.put(Party.LEOPARD, 0);
+        resultsMap.put(Party.TURTLE, 0);
+        resultsMap.put(Party.OWL, 0);
+        resultsMap.put(Party.TIGER, 0);
+        resultsMap.put(Party.TARSIER, 0);
+        resultsMap.put(Party.MONKEY, 0);
+        resultsMap.put(Party.LYNX, 0);
+        resultsMap.put(Party.WHITE_TIGER, 0);
+        resultsMap.put(Party.WHITE_GORILLA, 0);
+        resultsMap.put(Party.SNAKE, 0);
+        resultsMap.put(Party.JACKALOPE, 0);
+        resultsMap.put(Party.BUFFALO, 0);
+
+        System.out.println("\nPROVINCE: TUNDRA\n");
+        tundra.getPollingStations().forEach(st -> {
+            acum.updateAndGet(v -> v + st.getNumberOfVotes());
+            st.getVotes().forEach(vote -> {
+                int acum1 = resultsMap.get(vote.getFirstChoice());
+                resultsMap.put(vote.getFirstChoice(), acum1 + 1);
+            });
+        });
+        resultsMap.forEach( (party, votes) -> {
+            System.out.println("PARTY: " + party + " COUNT: " + votes);
+        });
+        System.out.println("Number of votes -> " + acum);
+
+        acum.set(0);
+        resultsMap.put(Party.GORILLA, 0);
+        resultsMap.put(Party.LEOPARD, 0);
+        resultsMap.put(Party.TURTLE, 0);
+        resultsMap.put(Party.OWL, 0);
+        resultsMap.put(Party.TIGER, 0);
+        resultsMap.put(Party.TARSIER, 0);
+        resultsMap.put(Party.MONKEY, 0);
+        resultsMap.put(Party.LYNX, 0);
+        resultsMap.put(Party.WHITE_TIGER, 0);
+        resultsMap.put(Party.WHITE_GORILLA, 0);
+        resultsMap.put(Party.SNAKE, 0);
+        resultsMap.put(Party.JACKALOPE, 0);
+        resultsMap.put(Party.BUFFALO, 0);
+
+        System.out.println("\nPROVINCE: SAVANNAH\n");
+        savannah.getPollingStations().forEach(st -> {
+            acum.updateAndGet(v -> v + st.getNumberOfVotes());
+            st.getVotes().forEach(vote -> {
+                int acum1 = resultsMap.get(vote.getFirstChoice());
+                resultsMap.put(vote.getFirstChoice(), acum1 + 1);
+            });
+        });
+        resultsMap.forEach( (party, votes) -> {
+            System.out.println("PARTY: " + party + " COUNT: " + votes);
+        });
+        System.out.println("Number of votes -> " + acum + "\n");
 
         genericService.printResults(results);
-
     }
 
 }
