@@ -104,19 +104,17 @@ public class GenericServiceConcurrencyTest {
 
                 int pollingStation = rand.nextInt(1000);
                 ProvinceName provinceName = provinceNames.get(rand.nextInt(3));
-                ArrayList<Party> vote = new ArrayList<>(rand.nextInt(4));
+                ArrayList<Party> vote = new ArrayList<>();
+                int randInt = rand.nextInt(3);
                 vote.add(party);
 
-                switch (vote.size()) {
-
+                switch (randInt) {
                     case 0:
                         break;
                     case 1:
-                        break;
-                    case 2:
                         vote.add(parties.get(rand.nextInt(13)));
                         break;
-                    case 3:
+                    case 2:
                         vote.add(parties.get(rand.nextInt(13)));
                         vote.add(parties.get(rand.nextInt(13)));
                         break;
@@ -273,5 +271,4 @@ public class GenericServiceConcurrencyTest {
 
         genericService.printResults(results);
     }
-
 }
