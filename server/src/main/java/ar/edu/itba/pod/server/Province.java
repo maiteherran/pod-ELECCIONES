@@ -22,12 +22,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Province {
 
     private List<PollingStation> pollingStations = Collections.synchronizedList(new ArrayList<>());
-    final private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
-    final private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
+    private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
+    private VoteCounter fptpCounter = new VoteCounter();
     private ProvinceName name;
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     public Province (ProvinceName name) {
         this.name = name;
@@ -55,6 +56,13 @@ public class Province {
             p.addVote(vote);
             pollingStations.add(p);
         }
+
+        writeLock.lock();
+        try {
+            fptpCounter.addVote(vote);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     public List<PollingStation> getPollingStations () {
@@ -75,15 +83,15 @@ public class Province {
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP () {
-        //TODO: chequear thread-safe en este metodo
+        TreeSet<MutablePair<Party, Double>> resultsFPTP;
+
         readLock.lock();
         try {
-            for (PollingStation station: pollingStations) {
-                GenericServiceImpl.addResults(station.getResultsFPTP(), resultsFPTP);
-            }
+            resultsFPTP = fptpCounter.getResultsFPTP();
         } finally {
             readLock.unlock();
         }
+
         return resultsFPTP;
     }
 
@@ -106,6 +114,7 @@ public class Province {
         } finally {
             readLock.unlock();
         }
+
         throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
     }
 }

@@ -9,9 +9,17 @@ import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GenericServiceImpl {
     private List<Province> provinces = new ArrayList<>();
+    private VoteCounter fptpCounter = new VoteCounter();
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     public GenericServiceImpl () {
         provinces.add(new Province(ProvinceName.JUNGLE));
@@ -33,6 +41,14 @@ public class GenericServiceImpl {
         /* podemos asumir que la provincia se encuentra dentro de las 3 ya agregadas --> no va a ser null el Optional */
         Province p = maybeProvince.get();
         p.addVote(newVote);
+
+        writeLock.lock();
+        try {
+            fptpCounter.addVote(newVote);
+        } finally {
+            writeLock.unlock();
+        }
+
         return true;
     }
 
@@ -81,11 +97,13 @@ public class GenericServiceImpl {
     }
 
     public TreeSet<MutablePair<Party, Double>> queryResults() {
-        //TODO: chequear thread-safe en este metodo
-        TreeSet<MutablePair<Party, Double>> finalResults = new TreeSet<>(new CountComparator());
+        TreeSet<MutablePair<Party, Double>> finalResults;
 
-        for (Province p: provinces) {
-            addResults(p.getResultsFPTP(), finalResults);
+        readLock.lock();
+        try {
+            finalResults = fptpCounter.getResultsFPTP();
+        } finally {
+            readLock.unlock();
         }
 
         return finalResults;

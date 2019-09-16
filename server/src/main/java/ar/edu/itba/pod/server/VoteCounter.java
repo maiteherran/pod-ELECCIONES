@@ -54,6 +54,13 @@ public class VoteCounter {
         return total;
     }
 
+    public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
+        TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
+        nextVotes.forEach(nextVotesItem ->
+                resultsAV.add(new MutablePair<>(nextVotesItem.party, nextVotesItem.votes / votes)));
+        return resultsAV;
+    }
+
     public TreeSet<MutablePair<Party, Double>> getResultsAV() {
         VoteCounter winner = nextVotes.get(0);
         VoteCounter loser = nextVotes.get(0);
@@ -70,10 +77,7 @@ public class VoteCounter {
         double validVotes = countValidVotes();
 
         if (winner.votes > validVotes / 2) {
-            TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
-            nextVotes.forEach(nextVotesItem ->
-                    resultsAV.add(new MutablePair<>(nextVotesItem.party, nextVotesItem.votes / votes)));
-            return resultsAV;
+            return getResultsFPTP();
         } else {
             nextVotes.remove(loser);
             mergeVotes(loser.nextVotes);

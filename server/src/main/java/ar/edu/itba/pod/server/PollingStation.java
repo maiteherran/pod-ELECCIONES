@@ -17,8 +17,7 @@ public class PollingStation {
 
     private final int id;
     private List<Vote> votes = new ArrayList<>();
-    private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
-    private int votesFPTPCount;
+    private VoteCounter fptpCounter = new VoteCounter();
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
@@ -26,7 +25,6 @@ public class PollingStation {
 
     public PollingStation (int id) {
         this.id = id;
-        this.votesFPTPCount = 0;
     }
 
     public int getId() {
@@ -41,40 +39,23 @@ public class PollingStation {
         writeLock.lock();
         try {
             votes.add(vote);
+            fptpCounter.addVote(vote);
         } finally {
             writeLock.unlock();
         }
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
+        TreeSet<MutablePair<Party, Double>> resultsFPTP;
+
         readLock.lock();
         try {
-            for (int i = votesFPTPCount; i < votes.size(); i++) {
-                addVoteToParty(votes.get(i), votes.get(i).getFirstChoice());
-            }
-
-            votesFPTPCount = votes.size();
+            resultsFPTP = fptpCounter.getResultsFPTP();
         } finally {
             readLock.unlock();
         }
 
         return resultsFPTP;
-    }
-
-    private void addVoteToParty (Vote vote, Party party) {
-        //TODO: chequear thread-safe en este metodo
-        readLock.lock();
-        try {
-            Optional<MutablePair<Party, Double>> maybeResult = resultsFPTP.stream().filter(result -> result.getLeft().equals(party)).findFirst();
-            if (maybeResult.isPresent()) {
-                maybeResult.get().setRight(maybeResult.get().getRight() + 1.0/(double)votes.size());
-            } else {
-                MutablePair<Party, Double> newVote = new MutablePair<>(vote.getFirstChoice(),  (1.0) / (double) votes.size());
-                resultsFPTP.add(newVote);
-            }
-        } finally {
-            readLock.unlock();
-        }
     }
 
     public void countVotes(VoteCounter counter) {
