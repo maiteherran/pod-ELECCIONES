@@ -12,6 +12,7 @@ import ar.edu.itba.pod.server.comparators.CountComparator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 
 public class Province {
@@ -27,21 +28,10 @@ public class Province {
 
     public void addVote(Vote vote) {
 
-        /* todo: usar expresiones lambda */
-
-        boolean pollingFound = false;
-
-        for (PollingStation p: pollingStations) {
-
-            if (p.getId() == vote.getPollingStation()) {
-                p.addVote(vote);
-                pollingFound = true;
-                break;
-            }
-        }
-
-        if (!pollingFound) {
-
+        Optional<PollingStation> maybePollingStation = pollingStations.stream().filter(st -> st.getId() == vote.getPollingStation()).findFirst();
+        if (maybePollingStation.isPresent()) {
+            maybePollingStation.get().addVote(vote);
+        } else {
             PollingStation p = new PollingStation(vote.getPollingStation());
             p.addVote(vote);
             pollingStations.add(p);

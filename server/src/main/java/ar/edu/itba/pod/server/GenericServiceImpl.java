@@ -24,7 +24,6 @@ public class GenericServiceImpl {
     public boolean addVote(int pollingStationId, ProvinceName province, List<Party> vote) throws IllegalVoteException {
 
         if (vote.size() <= 0 || vote.size() > 3) {
-
             throw new IllegalVoteException("No such choices are possible: minimum choices are 0 and maximum are 3");
         }
 

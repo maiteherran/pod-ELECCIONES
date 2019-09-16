@@ -17,21 +17,21 @@ import static org.junit.Assert.assertEquals;
 
 public class GenericServiceConcurrencyTest {
 
-    private static final int VOTES_COUNT = 100000000;
-    private static final int VOTES_COUNT_GORILLA = 30000000; /* 30% */
-    private static final int VOTES_COUNT_LEOPARD = 21000000; /* 21% */
-    private static final int VOTES_COUNT_TURTLE = 16000000; /* 16% */
-    private static final int VOTES_COUNT_OWL = 1100000; /* 11% */
-    private static final int VOTES_COUNT_TIGER = 10000000; /* 10% */
-    private static final int VOTES_COUNT_TARSIER = 5000000; /* 5% */
-    private static final int VOTES_COUNT_MONKEY = 2500000; /* 2,5% */
-    private static final int VOTES_COUNT_LYNX = 2400000; /* 2,4% */
-    private static final int VOTES_COUNT_WHITE_TIGER = 870000; /* 0,87% */
-    private static final int VOTES_COUNT_WHITE_GORILLA = 620000; /* 0,62% */
-    private static final int VOTES_COUNT_SNAKE = 500000; /* 0,5% */
-    private static final int VOTES_COUNT_JACKALOPE = 100000; /* 0,1% */
-    private static final int VOTES_COUNT_BUFFALO = 10000; /* 0,01% */
-    private static final int THREAD_COUNT = 10;
+    private static final int VOTES_COUNT = 1000000;
+    private static final int VOTES_COUNT_GORILLA = 300000; /* 30% */
+    private static final int VOTES_COUNT_LEOPARD = 210000; /* 21% */
+    private static final int VOTES_COUNT_TURTLE = 160000; /* 16% */
+    private static final int VOTES_COUNT_OWL = 11000; /* 11% */
+    private static final int VOTES_COUNT_TIGER = 100000; /* 10% */
+    private static final int VOTES_COUNT_TARSIER = 50000; /* 5% */
+    private static final int VOTES_COUNT_MONKEY = 25000; /* 2,5% */
+    private static final int VOTES_COUNT_LYNX = 24000; /* 2,4% */
+    private static final int VOTES_COUNT_WHITE_TIGER = 8700; /* 0,87% */
+    private static final int VOTES_COUNT_WHITE_GORILLA = 6200; /* 0,62% */
+    private static final int VOTES_COUNT_SNAKE = 5000; /* 0,5% */
+    private static final int VOTES_COUNT_JACKALOPE = 1000; /* 0,1% */
+    private static final int VOTES_COUNT_BUFFALO = 100; /* 0,01% */
+    private static final int THREAD_COUNT = 1;
 
     /* debería ser GenericService */
     private GenericServiceImpl genericService;
