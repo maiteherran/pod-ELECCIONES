@@ -27,6 +27,8 @@ public class Province {
 
     public void addVote(Vote vote) {
 
+        /* todo: usar expresiones lambda */
+
         boolean pollingFound = false;
 
         for (PollingStation p: pollingStations) {
