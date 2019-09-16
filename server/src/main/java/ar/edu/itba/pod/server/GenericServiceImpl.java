@@ -11,20 +11,16 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import java.util.*;
 
 public class GenericServiceImpl {
-
     private List<Province> provinces = new ArrayList<>();
 
     public GenericServiceImpl () {
-
         provinces.add(new Province(ProvinceName.JUNGLE));
         provinces.add(new Province(ProvinceName.SAVANNAH));
         provinces.add(new Province(ProvinceName.TUNDRA));
     }
 
     public boolean addVote(int pollingStationId, ProvinceName province, List<Party> vote) throws IllegalVoteException {
-
         if (vote.size() <= 0 || vote.size() > 3) {
-
             throw new IllegalVoteException("No such choices are possible: minimum choices are 0 and maximum are 3");
         }
 
@@ -40,18 +36,26 @@ public class GenericServiceImpl {
         return true;
     }
 
+    public Province getProvince (ProvinceName name) throws NoSuchProvinceException {
+        for (Province p: provinces) {
+            if (p.getName().equals(name)) {
+                return p;
+            }
+        }
+
+        throw new NoSuchProvinceException("Province name " + name + " does not exists.");
+    }
+
     public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name) throws NoSuchProvinceException {
         Province p = getProvince(name);
         return p.getResultsSTV();
     }
 
-    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (PollingStation id, ProvinceName name) throws NoSuchPollingStationException, NoSuchProvinceException {
-        Province p = getProvince(name);
-        for (PollingStation station: p.getPollingStations()) {
-            return station.getResultsFPTP();
-        }
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id, ProvinceName name)
+            throws NoSuchPollingStationException, NoSuchProvinceException {
 
-        throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
+        Province p = getProvince(name);
+        return p.getPollingStationResultsFPTP(id);
     }
 
     /**
@@ -64,39 +68,8 @@ public class GenericServiceImpl {
         return counter.getResultsAV();
     }
 
-    public Province getProvince (ProvinceName name) throws NoSuchProvinceException {
-        for (Province p: provinces) {
-            if (p.getName().equals(name)) {
-                return p;
-            }
-        }
-
-        throw new NoSuchProvinceException("Province name " + name + " does not exists.");
-    }
-
     public static void addResults (TreeSet<MutablePair<Party, Double>> from, TreeSet<MutablePair<Party, Double>> to) {
-
-        /*boolean found;
-        Iterator<MutablePair<Party, Double>> iteratorFrom = from.iterator();
-        Iterator<MutablePair<Party, Double>> iteratorTo;
-        while (iteratorFrom.hasNext()) {
-            MutablePair<Party, Double> pair = iteratorFrom.next();
-            found = false;
-
-            iteratorTo = to.iterator();
-            while ( !found && iteratorTo.hasNext() ) {
-                MutablePair<Party, Double> finalPair = iteratorTo.next();
-                if (finalPair.getLeft() == pair.getLeft()) {
-                    found = true;
-                    finalPair.setRight((finalPair.getRight() + pair.getRight()) / 2);
-                }
-            }
-
-            if (!found) {
-                to.add(new MutablePair<>(pair.getLeft(), pair.getRight()));
-            }
-        }*/
-
+        //TODO: chequear thread-safe en este metodo
         from.forEach( fromPair -> {
             Optional<MutablePair<Party, Double>> maybeToPair = to.stream().filter(toPair -> toPair.getLeft().equals(fromPair.getLeft())).findFirst();
             if (maybeToPair.isPresent()) {
@@ -104,11 +77,11 @@ public class GenericServiceImpl {
             } else {
                 to.add(new MutablePair<>(fromPair.getLeft(), fromPair.getRight()));
             }
-
         });
     }
 
     public TreeSet<MutablePair<Party, Double>> queryResults() {
+        //TODO: chequear thread-safe en este metodo
         TreeSet<MutablePair<Party, Double>> finalResults = new TreeSet<>(new CountComparator());
 
         for (Province p: provinces) {
@@ -119,7 +92,6 @@ public class GenericServiceImpl {
     }
 
     public void printResults(TreeSet<MutablePair<Party, Double>> results) {
-
         System.out.println("--------RESULTS--------------");
         results.forEach(pair -> System.out.println("PARTY: " + pair.getLeft() + " VOTES: " + Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%"));
     }
