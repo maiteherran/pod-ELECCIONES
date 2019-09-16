@@ -9,17 +9,22 @@ import ar.edu.itba.pod.server.enums.Party;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class PollingStation {
 
     private final int id;
     private List<Vote> votes = new ArrayList<>();
-    private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
-    private int votesFPTPCount;
+    private VoteCounter fptpCounter = new VoteCounter();
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     public PollingStation (int id) {
         this.id = id;
-        this.votesFPTPCount = 0;
     }
 
     public int getId() {
@@ -31,36 +36,34 @@ public class PollingStation {
     }
 
     public void addVote(Vote vote) {
-        votes.add(vote);
-    }
-
-    public int getNumberOfVotes() {
-        return votes.size();
+        writeLock.lock();
+        try {
+            votes.add(vote);
+            fptpCounter.addVote(vote);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
+        TreeSet<MutablePair<Party, Double>> resultsFPTP;
 
-        for (int i = votesFPTPCount; i < getNumberOfVotes(); i++) {
-            addVoteToParty(votes.get(i), votes.get(i).getFirstChoice());
+        readLock.lock();
+        try {
+            resultsFPTP = fptpCounter.getResultsFPTP();
+        } finally {
+            readLock.unlock();
         }
-
-        votesFPTPCount = getNumberOfVotes();
 
         return resultsFPTP;
     }
 
-    private void addVoteToParty (Vote vote, Party party) {
-
-        Optional<MutablePair<Party, Double>> maybeResult = resultsFPTP.stream().filter(result -> result.getLeft().equals(party)).findFirst();
-        if (maybeResult.isPresent()) {
-            maybeResult.get().setRight(maybeResult.get().getRight() + 1.0/(double)votes.size());
-        } else {
-            MutablePair<Party, Double> newVote = new MutablePair<>(vote.getFirstChoice(),  (1.0) / (double) votes.size());
-            resultsFPTP.add(newVote);
-        }
-    }
-
     public void countVotes(VoteCounter counter) {
-        votes.forEach(counter::addVote);
+        readLock.lock();
+        try {
+            votes.forEach(counter::addVote);
+        } finally {
+            readLock.unlock();
+        }
     }
 }
