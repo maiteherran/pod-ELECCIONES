@@ -31,6 +31,10 @@ public class PollingStation {
         return id;
     }
 
+    public int getNumberOfVotes() {
+        return votes.size();
+    }
+
     public List<Vote> getVotes() {
         return votes;
     }

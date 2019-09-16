@@ -100,11 +100,10 @@ public class GenericServiceConcurrencyTest {
         });*/
         partyCounts.forEach( (party, count) -> {
 
-            int pollingStation = rand.nextInt(1000);
-            ProvinceName provinceName = provinceNames.get(rand.nextInt(3));
-
             for (int i=0; i < count; i++) {
 
+                int pollingStation = rand.nextInt(1000);
+                ProvinceName provinceName = provinceNames.get(rand.nextInt(3));
                 ArrayList<Party> vote = new ArrayList<>(rand.nextInt(4));
                 vote.add(party);
 
@@ -151,8 +150,13 @@ public class GenericServiceConcurrencyTest {
 
         TreeSet<MutablePair<Party, Double>> results = genericService.queryResults();
         results.forEach(pair -> {
-            //assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, 0.001);
+            assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, 0.001);
         });
+        /*try {
+            this.debbuging(results);
+        } catch (NoSuchProvinceException e) {
+            e.printStackTrace();
+        }*/
     }
 
     @Test
@@ -166,7 +170,15 @@ public class GenericServiceConcurrencyTest {
         for (int j = 0; j < THREAD_COUNT; j++) {
             threads[j].join();
         }
-
+        TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
+        results.forEach(pair -> {
+            //assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, 0.001);
+        });
+        try {
+            this.debbuging(results);
+        } catch (NoSuchProvinceException e) {
+            e.printStackTrace();
+        }
     }
 
     private void debbuging(TreeSet<MutablePair<Party, Double>> results) throws NoSuchProvinceException {
