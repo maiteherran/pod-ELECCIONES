@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.server;
 
-import ar.edu.itba.pod.server.enums.Party;
-import ar.edu.itba.pod.server.enums.ProvinceName;
+import ar.edu.itba.pod.util.Party;
+import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

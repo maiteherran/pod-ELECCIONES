@@ -5,14 +5,10 @@
 package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.server.comparators.CountComparator;
-import ar.edu.itba.pod.server.enums.Party;
-import ar.edu.itba.pod.server.exceptions.InvalidChoiceException;
-import ar.edu.itba.pod.server.exceptions.NoWinnerException;
-import javafx.util.Pair;
+import ar.edu.itba.pod.util.Party;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class PollingStation {
 

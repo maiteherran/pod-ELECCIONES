@@ -1,5 +1,7 @@
-package ar.edu.itba.pod.client.util;
+package ar.edu.itba.pod.client.parameters;
 
+import ar.edu.itba.pod.client.util.QueryType;
+import ar.edu.itba.pod.util.ProvinceName;
 import org.jeasy.props.PropertiesInjectorBuilder;
 import org.jeasy.props.annotations.SystemProperty;
 
@@ -22,9 +24,12 @@ public class QueryClientParameters {
     @SystemProperty(value = "party")
     private String party;
 
+    private QueryType queryType;
+
+    private ProvinceName provinceName;
+
     public QueryClientParameters() {
         PropertiesInjectorBuilder.aNewPropertiesInjector().injectProperties(this);
-
     }
 
     public String getServerAddress() {
@@ -67,6 +72,13 @@ public class QueryClientParameters {
         this.outPath = outPath;
     }
 
+    public QueryType getQueryType() {
+        return queryType;
+    }
+
+    public ProvinceName getProvinceName() {
+        return provinceName;
+    }
 
     public void validate() throws Exception {
         Properties properties = System.getProperties();
@@ -86,5 +98,13 @@ public class QueryClientParameters {
             );
             throw new Exception();
         }
+        if (properties.containsKey("id")) {
+            this.queryType = QueryType.POLLING_STATION_QUERY;
+        } else if (properties.containsKey("state")) {
+            this.queryType = QueryType.PROVINCE_QUERY;
+            this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+
+        }
+        this.queryType = QueryType.NATIONAL_QUERY;
     }
 }

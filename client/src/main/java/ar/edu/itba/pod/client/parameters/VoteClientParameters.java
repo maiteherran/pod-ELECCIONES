@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.client.util;
+package ar.edu.itba.pod.client.parameters;
 
 import org.jeasy.props.PropertiesInjectorBuilder;
 import org.jeasy.props.annotations.SystemProperty;

@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.client;
 
-import ar.edu.itba.pod.client.util.VoteClientParameters;
+import ar.edu.itba.pod.client.parameters.VoteClientParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
