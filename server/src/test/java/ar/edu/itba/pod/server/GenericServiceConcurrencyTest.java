@@ -32,7 +32,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_SNAKE = 5000; /* 0,5% */
     private static final int VOTES_COUNT_JACKALOPE = 1000; /* 0,1% */
     private static final int VOTES_COUNT_BUFFALO = 100; /* 0,01% */
-    private static final int THREAD_COUNT = 1;
+    private static final int THREAD_COUNT = 10;
 
     /* debería ser GenericService */
     private GenericServiceImpl genericService;
@@ -79,6 +79,7 @@ public class GenericServiceConcurrencyTest {
     }
 
     private final Runnable election = () -> {
+        System.out.println("Entro thread");
 
         Random rand = new Random();
         int numberOfVotes = VOTES_COUNT;
@@ -126,10 +127,10 @@ public class GenericServiceConcurrencyTest {
                     e.printStackTrace();
                 }
             }
-
-
+            
         });
 
+        System.out.println("Salgo thread");
     };
 
     private final ExecutorService pool = Executors.newFixedThreadPool(THREAD_COUNT);
@@ -163,7 +164,7 @@ public class GenericServiceConcurrencyTest {
         final Thread[] threads = new Thread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
             threads[i] = new Thread(election, "thread" + i);
-            threads[i].run();
+            threads[i].start();
         }
         for (int j = 0; j < THREAD_COUNT; j++) {
             threads[j].join();
