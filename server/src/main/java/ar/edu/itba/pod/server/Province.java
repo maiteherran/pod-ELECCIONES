@@ -14,6 +14,7 @@ import ar.edu.itba.pod.server.comparators.CountComparator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -35,30 +36,24 @@ public class Province {
     }
 
     public void addVote(Vote vote) {
-
-        boolean pollingFound = false;
+        Optional<PollingStation> maybePollingStation;
 
         readLock.lock();
         try {
-            for (PollingStation p: pollingStations) {
-                if (p.getId() == vote.getPollingStation()) {
-                    p.addVote(vote);
-                    pollingFound = true;
-                    break;
-                }
-            }
+            maybePollingStation = pollingStations.stream().filter(st -> st.getId() == vote.getPollingStation()).findFirst();
         } finally {
             readLock.unlock();
         }
 
-        if (!pollingFound) {
-            PollingStation p = new PollingStation(vote.getPollingStation());
-            p.addVote(vote);
-            pollingStations.add(p);
-        }
-
         writeLock.lock();
         try {
+            if (maybePollingStation.isPresent()) {
+                maybePollingStation.get().addVote(vote);
+            } else {
+                PollingStation p = new PollingStation(vote.getPollingStation());
+                p.addVote(vote);
+                pollingStations.add(p);
+            }
             fptpCounter.addVote(vote);
         } finally {
             writeLock.unlock();
