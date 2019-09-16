@@ -100,13 +100,13 @@ public class GenericServiceConcurrencyTest {
         });*/
         partyCounts.forEach( (party, count) -> {
 
-            ArrayList<Party> vote = new ArrayList<>(rand.nextInt(4));
             int pollingStation = rand.nextInt(1000);
             ProvinceName provinceName = provinceNames.get(rand.nextInt(3));
 
-            vote.add(party);
-
             for (int i=0; i < count; i++) {
+
+                ArrayList<Party> vote = new ArrayList<>(rand.nextInt(4));
+                vote.add(party);
 
                 switch (vote.size()) {
 
