@@ -21,7 +21,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_GORILLA = 300000; /* 30% */
     private static final int VOTES_COUNT_LEOPARD = 210000; /* 21% */
     private static final int VOTES_COUNT_TURTLE = 160000; /* 16% */
-    private static final int VOTES_COUNT_OWL = 11000; /* 11% */
+    private static final int VOTES_COUNT_OWL = 110000; /* 11% */
     private static final int VOTES_COUNT_TIGER = 100000; /* 10% */
     private static final int VOTES_COUNT_TARSIER = 50000; /* 5% */
     private static final int VOTES_COUNT_MONKEY = 25000; /* 2,5% */
