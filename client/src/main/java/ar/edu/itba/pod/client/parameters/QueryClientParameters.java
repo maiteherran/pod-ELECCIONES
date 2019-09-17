@@ -7,11 +7,7 @@ import org.jeasy.props.annotations.SystemProperty;
 
 import java.util.Properties;
 
-public class QueryClientParameters {
-
-    @SystemProperty(value = "serverAddress")
-    private String serverAddress;
-
+public class QueryClientParameters extends ClientParameters {
     @SystemProperty(value = "state")
     private String state;
 
@@ -29,15 +25,7 @@ public class QueryClientParameters {
     private ProvinceName provinceName;
 
     public QueryClientParameters() {
-        PropertiesInjectorBuilder.aNewPropertiesInjector().injectProperties(this);
-    }
-
-    public String getServerAddress() {
-        return serverAddress;
-    }
-
-    public void setServerAddress(String serverAddress) {
-        this.serverAddress = serverAddress;
+        super();
     }
 
     public String getId() {
@@ -103,7 +91,6 @@ public class QueryClientParameters {
         } else if (properties.containsKey("state")) {
             this.queryType = QueryType.PROVINCE_QUERY;
             this.provinceName = ProvinceName.valueOf(state.toUpperCase());
-
         }
         this.queryType = QueryType.NATIONAL_QUERY;
     }

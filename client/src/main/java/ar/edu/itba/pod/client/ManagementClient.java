@@ -28,7 +28,7 @@ public class ManagementClient extends Client {
             System.exit(-1);
         } catch (RemoteException | NotBoundException | MalformedURLException e) {
             logger.error("Connection error");
-            System.out.println("An error occured");
+            System.out.println("A connection error occured");
             System.exit(-1);
         }
     }

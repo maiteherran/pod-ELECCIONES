@@ -5,24 +5,12 @@ import org.jeasy.props.annotations.SystemProperty;
 
 import java.util.Properties;
 
-public class VoteClientParameters {
-    @SystemProperty(value = "serverAddress")
-    private String serverAddress;
-
+public class VoteClientParameters extends ClientParameters {
     @SystemProperty(value = "votesPath")
     private String votesPath;
 
     public VoteClientParameters() {
-        PropertiesInjectorBuilder.aNewPropertiesInjector().injectProperties(this);
-
-    }
-
-    public String getServerAddress() {
-        return serverAddress;
-    }
-
-    public void setServerAddress(String serverAddress) {
-        this.serverAddress = serverAddress;
+      super();
     }
 
     public String getVotesPath() {

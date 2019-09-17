@@ -13,15 +13,13 @@ import org.slf4j.LoggerFactory;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.TreeSet;
 
-import static ar.edu.itba.pod.client.Client.getServiceFromServer;
 
-public class QueryClient {
-    private static Logger logger = LoggerFactory.getLogger(ManagementClient.class);
+public class QueryClient extends Client {
+    private static Logger logger = LoggerFactory.getLogger(QueryClient.class);
     private static QueryClientParameters parameters;
     private static QueryService queryService;
     private static TreeSet<MutablePair<Party, Double>> queryResults;
@@ -40,10 +38,9 @@ public class QueryClient {
             System.out.println("An error occured");
             System.exit(-1);
         }
-
     }
 
-    private static void executeQueryOnServer() throws RemoteException {
+    private static void executeQueryOnServer() throws RemoteException, IllegalArgumentException {
         try {
             switch (parameters.getQueryType()) {
                 case NATIONAL_QUERY:
@@ -82,6 +79,7 @@ public class QueryClient {
             writer.close();
         } catch (IOException e) {
             logger.error("Query results couldn't be written to file");
+            System.out.println("Results couldn't be written to file.");
         }
     }
 
@@ -101,5 +99,4 @@ public class QueryClient {
         }
         System.out.println(s + " won the election.");
     }
-
 }

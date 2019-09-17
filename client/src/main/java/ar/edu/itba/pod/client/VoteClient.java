@@ -2,6 +2,7 @@ package ar.edu.itba.pod.client;
 import ar.edu.itba.pod.VoteService;
 import ar.edu.itba.pod.client.exceptions.InvalidCSVvotingFileException;
 import ar.edu.itba.pod.client.parameters.VoteClientParameters;
+import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
@@ -15,15 +16,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
 
-import static ar.edu.itba.pod.client.Client.getServiceFromServer;
 
-public class VoteClient {
+public class VoteClient extends Client {
     private static Logger logger = LoggerFactory.getLogger(VoteClient.class);
     private static VoteService voteService;
     private static  VoteClientParameters parameters;
@@ -34,7 +33,6 @@ public class VoteClient {
 
     public static void main(String[] args) {
         parameters = new VoteClientParameters();
-
         try {
             parameters.validate();
             voteService = (VoteService) getServiceFromServer(parameters.getServerAddress(), ServiceName.VOTE_SERVICE);
@@ -49,7 +47,6 @@ public class VoteClient {
 
         try {
             parseVotes();
-            voteService.emitVotes(votes);
             System.out.println(votes.size() + " votes registered");
         } catch (InvalidCSVvotingFileException | IllegalArgumentException e) {
             logger.error("Invalid csv file");
@@ -61,6 +58,18 @@ public class VoteClient {
             System.exit(-1);
         } catch (IOException e) {
             logger.error("IO error");
+            System.exit(-1);
+        }
+
+        try {
+            voteService.emitVotes(votes);
+        } catch (IllegalStateException e) {
+            logger.error("Invalid state");
+            System.out.println("Elections aren't currently being held. No votes can be emitted.");
+            System.exit(-1);
+        } catch (RemoteException e) {
+            logger.error("Connection error");
+            System.out.println("An error occured");
             System.exit(-1);
         }
     }
