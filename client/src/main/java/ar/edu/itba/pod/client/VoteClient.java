@@ -1,6 +1,8 @@
 package ar.edu.itba.pod.client;
+import ar.edu.itba.pod.QueryService;
 import ar.edu.itba.pod.VoteService;
 import ar.edu.itba.pod.client.exceptions.InvalidCSVvotingFileException;
+import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
 import ar.edu.itba.pod.client.parameters.VoteClientParameters;
 import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.models.Vote;
@@ -33,21 +35,30 @@ public class VoteClient extends Client {
 
     public static void main(String[] args) {
         parameters = new VoteClientParameters();
+
         try {
             parameters.validate();
-            voteService = (VoteService) getServiceFromServer(parameters.getServerAddress(), ServiceName.VOTE_SERVICE);
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid params");
+        } catch (InvalidProgramParametersException e) {
+            logger.error(e.getMessage());
             System.exit(-1);
-        } catch (RemoteException  | NotBoundException | MalformedURLException e) {
-            logger.error("Connection error");
-            System.out.println("An error occured");
+        }
+
+        try {
+            voteService = (VoteService) getServiceFromServer(parameters.getServerAddress(), ServiceName.VOTE_SERVICE);
+        } catch (RemoteException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        } catch (NotBoundException e) {
+            logger.error("The service required isn't in the name registry in the server");
+            System.out.println("Server error");
+            System.exit(-1);
+        } catch (MalformedURLException e) {
+            System.out.println("The server address entered is unreachable."); //todo preguntar
             System.exit(-1);
         }
 
         try {
             parseVotes();
-            System.out.println(votes.size() + " votes registered");
         } catch (InvalidCSVvotingFileException | IllegalArgumentException e) {
             logger.error("Invalid csv file");
             System.out.println("The voting file's format is invalid");
@@ -63,6 +74,7 @@ public class VoteClient extends Client {
 
         try {
             voteService.emitVotes(votes);
+            System.out.println(votes.size() + " votes registered");
         } catch (IllegalStateException e) {
             logger.error("Invalid state");
             System.out.println("Elections aren't currently being held. No votes can be emitted.");

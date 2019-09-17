@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.client.parameters;
 
+import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
 import ar.edu.itba.pod.client.util.QueryType;
 import ar.edu.itba.pod.util.ProvinceName;
 import org.jeasy.props.PropertiesInjectorBuilder;
@@ -68,32 +69,50 @@ public class QueryClientParameters extends ClientParameters {
         return provinceName;
     }
 
-    public void validate() throws IllegalArgumentException {
+    public void validate() throws InvalidProgramParametersException {
         Properties properties = System.getProperties();
+        boolean invalid = false;
 
-        if (!properties.containsKey("serverAddress") || !properties.containsKey("outPath")
-        || (properties.containsKey("id") && properties.containsKey("state"))) {
-
-            System.out.println("Invalid program arguments.\n" +
-                    "Here's an example of how you should execute the QueryClient from command line: \n" +
-                    "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName  [ -Dstate=stateName | -Did=pollingPlaceNumber] -DoutPath= fileName ar.edu.itba.pod.client.QueryClient\n" +
-                    "where, \n" +
-                    "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
-                    "- stateName: name of province chosen to solve query #2\n" +
-                    "- pollingPlaceNumber: number of table chosen to solve quer #3 \n" +
-                    " - fileName: path to file where the results of the query will be placed \n" +
-                    "If -Dstate and -Did are omitted, then query #1 will be executed\n"
-            );
-            throw new IllegalArgumentException();
+        if(!properties.containsKey("serverAddress")) {
+            System.out.println("Server address parameter missing.");
+            invalid = true;
         }
-        if (properties.containsKey("id")) {
-            this.queryType = QueryType.POLLING_STATION_QUERY;
-        } else if (properties.containsKey("state")) {
-            this.queryType = QueryType.PROVINCE_QUERY;
-            this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+
+        if (!properties.containsKey("outPath")) {
+            System.out.println("Out path parameter missing.");
+            invalid = true;
+        }
+
+        if ((properties.containsKey("id") && properties.containsKey("state"))) {
+            System.out.println("You should enter either id or state parameter. Not both.");
+            invalid = true;
         } else {
-            this.queryType = QueryType.NATIONAL_QUERY;
+            if (properties.containsKey("id")) {
+                this.queryType = QueryType.POLLING_STATION_QUERY;
+            } else if (properties.containsKey("state")) {
+                this.queryType = QueryType.PROVINCE_QUERY;
+                this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+            } else {
+                this.queryType = QueryType.NATIONAL_QUERY;
+            }
         }
 
+        if (invalid) {
+            printParametersHelp ();
+            throw new InvalidProgramParametersException("Invalid program parameters");
+        }
+    }
+
+    private void printParametersHelp () {
+        System.out.println(
+                "Here's an example of how you should execute the QueryClient from command line: \n" +
+                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName  [ -Dstate=stateName | -Did=pollingPlaceNumber] -DoutPath= fileName ar.edu.itba.pod.client.QueryClient\n" +
+                "where, \n" +
+                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
+                "- stateName: name of province chosen to solve query #2\n" +
+                "- pollingPlaceNumber: number of table chosen to solve quer #3 \n" +
+                " - fileName: path to file where the results of the query will be placed \n" +
+                "If -Dstate and -Did are omitted, then query #1 will be executed\n"
+        );
     }
 }

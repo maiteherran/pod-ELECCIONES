@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.client;
 
 import ar.edu.itba.pod.ManagementService;
+import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
 import ar.edu.itba.pod.client.parameters.ManagementClientParameters;
 import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.util.ElectionState;
@@ -19,14 +20,30 @@ public class ManagementClient extends Client {
 
     public static void main (String[] args) {
         parameters = new ManagementClientParameters();
+
         try {
             parameters.validate();
-            managementService = (ManagementService) getServiceFromServer(parameters.getServerAddress(), ServiceName.MANAGEMENT_SERVICE);
-            executeActionOnServer();
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid params");
+        } catch (InvalidProgramParametersException e) {
             System.exit(-1);
-        } catch (RemoteException | NotBoundException | MalformedURLException e) {
+        }
+
+        try {
+            managementService = (ManagementService) getServiceFromServer(parameters.getServerAddress(), ServiceName.MANAGEMENT_SERVICE);
+        } catch (RemoteException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        } catch (NotBoundException e) {
+            logger.error("The service required isn't in the name registry in the server");
+            System.out.println("Server error");
+            System.exit(-1);
+        } catch (MalformedURLException e) {
+            System.out.println("The server address entered is unreachable."); //todo preguntar
+            System.exit(-1);
+        }
+
+        try {
+            executeActionOnServer();
+        } catch (RemoteException e) {
             logger.error("Connection error");
             System.out.println("A connection error occured");
             System.exit(-1);

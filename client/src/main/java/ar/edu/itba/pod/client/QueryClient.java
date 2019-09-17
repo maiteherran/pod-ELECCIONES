@@ -1,6 +1,8 @@
 package ar.edu.itba.pod.client;
 
+import ar.edu.itba.pod.ManagementService;
 import ar.edu.itba.pod.QueryService;
+import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
 import ar.edu.itba.pod.client.parameters.QueryClientParameters;
 import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.util.Party;
@@ -24,7 +26,40 @@ public class QueryClient extends Client {
     private static QueryService queryService;
     private static TreeSet<MutablePair<Party, Double>> queryResults;
 
-    private static void executeQueryOnServer() throws RemoteException, IllegalArgumentException {
+    public static void main(String[] args) {
+        parameters = new QueryClientParameters();
+
+        try {
+            parameters.validate();
+        } catch (InvalidProgramParametersException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        }
+
+        try {
+            queryService = (QueryService) getServiceFromServer(parameters.getServerAddress(), ServiceName.QUERY_SERVICE);
+        } catch (RemoteException e) {
+            logger.error(e.getMessage());
+            System.exit(-1);
+        } catch (NotBoundException e) {
+            logger.error("The service required isn't in the name registry in the server");
+            System.out.println("Server error");
+            System.exit(-1);
+        } catch (MalformedURLException e) {
+            System.out.println("The server address entered is unreachable."); //todo preguntar
+            System.exit(-1);
+        }
+
+        try {
+            executeQueryOnServer();
+        } catch (RemoteException e) {
+            logger.error("Connection error");
+            System.out.println("A connection error occured");
+            System.exit(-1);
+        }
+    }
+
+    private static void executeQueryOnServer() throws RemoteException {
         try {
             switch (parameters.getQueryType()) {
                 case NATIONAL_QUERY:
@@ -42,42 +77,23 @@ public class QueryClient extends Client {
             }
             resultsToCsv ();
         } catch (InvalidStateException e) {
-            System.out.println("Your query couldn't be processed.");
-            System.exit(-1);
-        }
-    }
-
-    public static void main(String[] args) {
-        parameters = new QueryClientParameters();
-        try {
-            parameters.validate();
-            queryService = (QueryService) getServiceFromServer(parameters.getServerAddress(), ServiceName.QUERY_SERVICE);
-            executeQueryOnServer();
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid params");
-            System.exit(-1);
-        } catch (RemoteException  | NotBoundException | MalformedURLException e) {
-            logger.error("Connection error");
-            System.out.println("An error occured");
-            System.exit(-1);
+            System.out.println("Your query couldn't be processed due to an invalid state in the elections.");
         }
     }
 
     /*Escribe los resultados de las elecciones en un archivo csv*/
     private static void resultsToCsv () {
         //"/home/maite/Documents/query.csv"
-        try {
-            CSVWriter writer = new CSVWriter(new FileWriter(parameters.getOutPath()), ';', CSVWriter.DEFAULT_QUOTE_CHARACTER,
-                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                    CSVWriter.DEFAULT_LINE_END);
+        try (CSVWriter writer = new CSVWriter(new FileWriter(parameters.getOutPath()), ';', CSVWriter.DEFAULT_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                CSVWriter.DEFAULT_LINE_END)) {
             for (MutablePair<Party, Double> pair : queryResults){
                 String[] outputline = new String[2];
                 outputline[0] = Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%";
                 outputline[1] = String.valueOf(pair.getLeft());
                 writer.writeNext(outputline);
             }
-            writer.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Query results couldn't be written to file");
             System.out.println("Results couldn't be written to file.");
         }
