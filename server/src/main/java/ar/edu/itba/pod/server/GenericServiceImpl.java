@@ -12,22 +12,27 @@ import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GenericServiceImpl {
-
+    private TreeSet<MutablePair<Party, Double>> resultsAV = null;
     private List<Province> provinces = new ArrayList<>();
+    private VoteCounter fptpCounter = new VoteCounter();
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     public GenericServiceImpl () {
-
         provinces.add(new Province(ProvinceName.JUNGLE));
         provinces.add(new Province(ProvinceName.SAVANNAH));
         provinces.add(new Province(ProvinceName.TUNDRA));
     }
 
     public boolean addVote(int pollingStationId, ProvinceName province, List<Party> vote) throws IllegalVoteException {
-
         if (vote.size() <= 0 || vote.size() > 3) {
-
             throw new IllegalVoteException("No such choices are possible: minimum choices are 0 and maximum are 3");
         }
 
@@ -40,31 +45,15 @@ public class GenericServiceImpl {
         /* podemos asumir que la provincia se encuentra dentro de las 3 ya agregadas --> no va a ser null el Optional */
         Province p = maybeProvince.get();
         p.addVote(newVote);
-        return true;
-    }
 
-    public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name) throws NoSuchProvinceException {
-        Province p = getProvince(name);
-        return p.getResultsSTV();
-    }
-
-    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (PollingStation id, ProvinceName name) throws NoSuchPollingStationException, NoSuchProvinceException {
-        Province p = getProvince(name);
-        for (PollingStation station: p.getPollingStations()) {
-            return station.getResultsFPTP();
+        writeLock.lock();
+        try {
+            fptpCounter.addVote(newVote);
+        } finally {
+            writeLock.unlock();
         }
 
-        throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
-    }
-
-    /**
-     * Donde se elegirá a un partido político ganador para ocupar un cargo
-     * ejecutivo nacional, mediante el sistema AV.
-     */
-    public TreeSet<MutablePair<Party, Double>> getNationalResults() {
-        VoteCounter counter = new VoteCounter();
-        provinces.forEach(province -> province.countVotes(counter));
-        return counter.getResultsAV();
+        return true;
     }
 
     public Province getProvince (ProvinceName name) throws NoSuchProvinceException {
@@ -77,29 +66,41 @@ public class GenericServiceImpl {
         throw new NoSuchProvinceException("Province name " + name + " does not exists.");
     }
 
+    public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name) throws NoSuchProvinceException {
+        Province p = getProvince(name);
+        return p.getResultsSTV();
+    }
+
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id)
+            throws NoSuchPollingStationException{
+
+        for (Province p : provinces) {
+            TreeSet<MutablePair<Party, Double>> ret = p.getPollingStationResultsFPTP(id);
+            if (ret != null)
+                return ret;
+        }
+
+        throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
+    }
+
+    /**
+     * Donde se elegirá a un partido político ganador para ocupar un cargo
+     * ejecutivo nacional, mediante el sistema AV.
+     */
+    public TreeSet<MutablePair<Party, Double>> getNationalResults() {
+        writeLock.lock();
+        try {
+            if (resultsAV == null) {
+                resultsAV = fptpCounter.getResultsAV();
+            }
+        } finally {
+            writeLock.unlock();
+        }
+        return resultsAV;
+    }
+
     public static void addResults (TreeSet<MutablePair<Party, Double>> from, TreeSet<MutablePair<Party, Double>> to) {
-
-        /*boolean found;
-        Iterator<MutablePair<Party, Double>> iteratorFrom = from.iterator();
-        Iterator<MutablePair<Party, Double>> iteratorTo;
-        while (iteratorFrom.hasNext()) {
-            MutablePair<Party, Double> pair = iteratorFrom.next();
-            found = false;
-
-            iteratorTo = to.iterator();
-            while ( !found && iteratorTo.hasNext() ) {
-                MutablePair<Party, Double> finalPair = iteratorTo.next();
-                if (finalPair.getLeft() == pair.getLeft()) {
-                    found = true;
-                    finalPair.setRight((finalPair.getRight() + pair.getRight()) / 2);
-                }
-            }
-
-            if (!found) {
-                to.add(new MutablePair<>(pair.getLeft(), pair.getRight()));
-            }
-        }*/
-
+        //TODO: chequear thread-safe en este metodo
         from.forEach( fromPair -> {
             Optional<MutablePair<Party, Double>> maybeToPair = to.stream().filter(toPair -> toPair.getLeft().equals(fromPair.getLeft())).findFirst();
             if (maybeToPair.isPresent()) {
@@ -107,22 +108,23 @@ public class GenericServiceImpl {
             } else {
                 to.add(new MutablePair<>(fromPair.getLeft(), fromPair.getRight()));
             }
-
         });
     }
 
     public TreeSet<MutablePair<Party, Double>> queryResults() {
-        TreeSet<MutablePair<Party, Double>> finalResults = new TreeSet<>(new CountComparator());
+        TreeSet<MutablePair<Party, Double>> finalResults;
 
-        for (Province p: provinces) {
-            addResults(p.getResultsFPTP(), finalResults);
+        readLock.lock();
+        try {
+            finalResults = fptpCounter.getResultsFPTP();
+        } finally {
+            readLock.unlock();
         }
 
         return finalResults;
     }
 
     public void printResults(TreeSet<MutablePair<Party, Double>> results) {
-
         System.out.println("--------RESULTS--------------");
         results.forEach(pair -> System.out.println("PARTY: " + pair.getLeft() + " VOTES: " + Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%"));
     }
