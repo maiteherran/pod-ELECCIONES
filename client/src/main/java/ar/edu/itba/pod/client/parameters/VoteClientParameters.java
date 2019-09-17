@@ -33,7 +33,7 @@ public class VoteClientParameters {
         this.votesPath = votesPath;
     }
 
-    public void validate() throws Exception {
+    public void validate() throws IllegalArgumentException {
         Properties properties = System.getProperties();
 
         if(!properties.containsKey("serverAddress") || !properties.containsKey("votesPath")) {
@@ -44,7 +44,7 @@ public class VoteClientParameters {
                     "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
                     "- fileName: path to citizinen voting file"
             );
-            throw new Exception();
+            throw new IllegalArgumentException();
         }
     }
 

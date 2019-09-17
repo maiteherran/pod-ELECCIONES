@@ -80,7 +80,7 @@ public class QueryClientParameters {
         return provinceName;
     }
 
-    public void validate() throws Exception {
+    public void validate() throws IllegalArgumentException {
         Properties properties = System.getProperties();
 
         if (!properties.containsKey("serverAddress") || !properties.containsKey("outPath")
@@ -96,7 +96,7 @@ public class QueryClientParameters {
                     " - fileName: path to file where the results of the query will be placed \n" +
                     "If -Dstate and -Did are omitted, then query #1 will be executed\n"
             );
-            throw new Exception();
+            throw new IllegalArgumentException();
         }
         if (properties.containsKey("id")) {
             this.queryType = QueryType.POLLING_STATION_QUERY;

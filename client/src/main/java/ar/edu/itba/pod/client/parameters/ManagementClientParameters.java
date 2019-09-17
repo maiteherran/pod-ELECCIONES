@@ -1,26 +1,16 @@
 package ar.edu.itba.pod.client.parameters;
-import org.jeasy.props.PropertiesInjectorBuilder;
+import ar.edu.itba.pod.client.util.ManagementClientAction;
 import org.jeasy.props.annotations.SystemProperty;
 
 import java.util.Properties;
 
-public class ManagementClientParameters {
-    @SystemProperty(value = "serverAddress")
-    private String serverAddress;
-
+public class ManagementClientParameters extends ClientParameters {
     @SystemProperty(value = "action")
     private String action;
+    private ManagementClientAction managementAction;
 
     public ManagementClientParameters() {
-        PropertiesInjectorBuilder.aNewPropertiesInjector().injectProperties(this);
-    }
-
-    public String getServerAddress() {
-        return serverAddress;
-    }
-
-    public void setServerAddress(String serverAddress) {
-        this.serverAddress = serverAddress;
+        super();
     }
 
     public String getAction() {
@@ -31,7 +21,11 @@ public class ManagementClientParameters {
         this.action = action;
     }
 
-    public void validate() throws Exception {
+    public ManagementClientAction getManagementAction() {
+        return managementAction;
+    }
+
+    public void validate() throws IllegalArgumentException {
         Properties properties = System.getProperties();
 
         if(!properties.containsKey("serverAddress") || !properties.containsKey("action") ||
@@ -49,15 +43,8 @@ public class ManagementClientParameters {
                             "       o state: \n" +
                             "       o close: \n"
                     );
-            throw new Exception();
+            throw new IllegalArgumentException();
         }
+        managementAction = ManagementClientAction.valueOf(action.toUpperCase());
     }
-
-    @Override
-    public String toString() {
-        return "address: " + serverAddress + "\n";
-    }
-
-
-
 }

@@ -11,4 +11,8 @@ public enum ElectionState {
     ElectionState(String descr) {
         this.description = descr;
     }
+
+    public String getDescription () {
+        return description;
+    }
 }

@@ -5,6 +5,7 @@ import ar.edu.itba.pod.client.parameters.VoteClientParameters;
 import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
+import ar.edu.itba.pod.util.ServiceName;
 import com.opencsv.CSVReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,9 +14,14 @@ import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
+
+import static ar.edu.itba.pod.client.Client.getServiceFromServer;
 
 public class VoteClient {
     private static Logger logger = LoggerFactory.getLogger(VoteClient.class);
@@ -26,14 +32,21 @@ public class VoteClient {
     private static final int PROVINCE = 1 ;
     private static final int PARTIES = 2;
 
-    public static void main(String[] args) throws Exception  {
+    public static void main(String[] args) {
         parameters = new VoteClientParameters();
+
         try {
             parameters.validate();
-        } catch (Exception e) {
-            logger.error("invalid params");
+            voteService = (VoteService) getServiceFromServer(parameters.getServerAddress(), ServiceName.VOTE_SERVICE);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid params");
+            System.exit(-1);
+        } catch (RemoteException  | NotBoundException | MalformedURLException e) {
+            logger.error("Connection error");
+            System.out.println("An error occured");
+            System.exit(-1);
         }
-        voteService = (VoteService) Naming.lookup("//" + parameters.getServerAddress() + "/VoteService");
+
         try {
             parseVotes();
             voteService.emitVotes(votes);
@@ -41,11 +54,14 @@ public class VoteClient {
         } catch (InvalidCSVvotingFileException | IllegalArgumentException e) {
             logger.error("Invalid csv file");
             System.out.println("The voting file's format is invalid");
+            System.exit(-1);
         } catch (FileNotFoundException e) {
             logger.error("File not found");
             System.out.println("The voting file wasn't found");
+            System.exit(-1);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IO error");
+            System.exit(-1);
         }
     }
 
@@ -65,5 +81,4 @@ public class VoteClient {
             }
         }
     }
-
 }

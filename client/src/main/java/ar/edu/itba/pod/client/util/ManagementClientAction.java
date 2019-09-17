@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.client.util;
 
-public enum ManagementClientActions {
+public enum ManagementClientAction {
     OPEN ( "Open elections"),
     STATE ( "Get state of elections"),
     CLOSE ("Close elections"),
@@ -8,7 +8,7 @@ public enum ManagementClientActions {
 
     final String description;
 
-    ManagementClientActions(String descr) {
+    ManagementClientAction(String descr) {
         this.description = descr;
     }
 }
