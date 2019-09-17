@@ -1,14 +1,16 @@
 package ar.edu.itba.pod.server;
 
+import ar.edu.itba.pod.exceptions.InvalidStateException;
+import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
-import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
+import ar.edu.itba.pod.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +36,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_BUFFALO_1 = 100; /* 0,01% */
     private static final int VOTES_COUNT_LEOPARD_2 = 630000; /* 63% */
     private static final int VOTES_COUNT_OWL_2 = 300000; /* 30% */
-    private static final int THREAD_COUNT = 10;
+    private static final int THREAD_COUNT = 2;
     private static final double LAMBDA = 0.001;
 
     /* debería ser GenericService */
@@ -129,11 +131,8 @@ public class GenericServiceConcurrencyTest {
                         break;
                 }
 
-                try {
-                    genericService.addVote(pollingStation, provinceName, vote);
-                } catch (IllegalVoteException e) {
-                    e.printStackTrace();
-                }
+                Vote v = new Vote(vote, pollingStation, provinceName);
+                genericService.addVote(v);
             }
 
         });
@@ -179,7 +178,8 @@ public class GenericServiceConcurrencyTest {
     }
 
     @Test
-    public final void countingFPTPVotes () throws InterruptedException {
+    public final void countingFPTPVotes () throws InterruptedException, InvalidStateException, RemoteException {
+        genericService.openElection();
 
         final Thread[] threads = new Thread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -190,14 +190,17 @@ public class GenericServiceConcurrencyTest {
             threads[j].join();
         }
 
-        TreeSet<MutablePair<Party, Double>> results = genericService.queryResults();
+        genericService.closeElection();
+        TreeSet<MutablePair<Party, Double>> results = genericService.getResultsFPTP();
+        genericService.printResults(results);
         results.forEach(pair -> {
             assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, LAMBDA);
         });
     }
 
     @Test
-    public final void countingAVVotes () throws InterruptedException {
+    public final void countingAVVotes () throws InterruptedException, InvalidStateException, RemoteException {
+        genericService.openElection();
 
         final Thread[] threads = new Thread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -207,9 +210,12 @@ public class GenericServiceConcurrencyTest {
         for (int j = 0; j < THREAD_COUNT; j++) {
             threads[j].join();
         }
+
+        genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
+        genericService.printResults(results);
         results.forEach(pair -> {
-            if (pair.getLeft().equals(Party.OWL)) {
+            if (pair.getLeft().equals(Party.GORILLA)) {
                 assertEquals(pair.right, (double) VOTES_COUNT_OWL_2 / (double) VOTES_COUNT, LAMBDA);
             } else {
                 assertEquals(pair.right, (double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, LAMBDA);
@@ -218,7 +224,8 @@ public class GenericServiceConcurrencyTest {
     }
 
     @Test
-    public final void countingSTVVotes () throws InterruptedException {
+    public final void countingSTVVotes () throws InterruptedException, InvalidStateException, RemoteException {
+       genericService.openElection();
 
         final Thread[] threads = new Thread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -229,22 +236,16 @@ public class GenericServiceConcurrencyTest {
             threads[j].join();
         }
 
-        List<Province> provinces = new ArrayList<>();
-        provinceNames.forEach(p -> {
+        genericService.closeElection();
+
+        for (ProvinceName p : provinceNames) {
             try {
-                provinces.add(genericService.getProvince(p));
-            } catch (NoSuchProvinceException e) {
-                e.printStackTrace();
-            }
-        });
-        provinces.forEach( p -> {
-            TreeSet<MutablePair<Party, Double>> results = p.getResultsSTV();
-            try {
+                TreeSet<MutablePair<Party, Double>> results = genericService.getProvinceResults(p);
                 this.debbuging(results);
             } catch (NoSuchProvinceException e) {
                 e.printStackTrace();
             }
-        });
+        }
     }
 
     private void debbuging(TreeSet<MutablePair<Party, Double>> results) throws NoSuchProvinceException {

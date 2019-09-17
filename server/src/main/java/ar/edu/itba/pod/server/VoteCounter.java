@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.server;
 
+import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.server.comparators.CountComparator;
 import ar.edu.itba.pod.util.Party;
 import org.apache.commons.lang3.tuple.MutablePair;

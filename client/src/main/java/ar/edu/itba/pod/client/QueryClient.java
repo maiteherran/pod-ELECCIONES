@@ -5,6 +5,8 @@ import ar.edu.itba.pod.QueryService;
 import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
 import ar.edu.itba.pod.client.parameters.QueryClientParameters;
 import ar.edu.itba.pod.exceptions.InvalidStateException;
+import ar.edu.itba.pod.exceptions.NoSuchPollingStationException;
+import ar.edu.itba.pod.exceptions.NoSuchProvinceException;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ServiceName;
 import com.opencsv.CSVWriter;
@@ -71,13 +73,15 @@ public class QueryClient extends Client {
                     printNwinnersInConsole (5);
                     break;
                 case POLLING_STATION_QUERY:
-                    queryResults = queryService.getPollingStationResults(Long.parseLong(parameters.getId()));
+                    queryResults = queryService.getPollingStationResults(Integer.parseInt(parameters.getId()));
                     printNwinnersInConsole (1);
                     break;
             }
             resultsToCsv ();
         } catch (InvalidStateException e) {
             System.out.println("Your query couldn't be processed due to an invalid state in the elections.");
+        } catch (NoSuchProvinceException | NoSuchPollingStationException e) {
+            System.out.println("An error occured");
         }
     }
 

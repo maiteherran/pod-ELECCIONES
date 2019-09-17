@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.server.exceptions;
+package ar.edu.itba.pod.exceptions;
 
 public class NoSuchPollingStationException extends Exception {
 

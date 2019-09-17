@@ -3,9 +3,11 @@ package ar.edu.itba.pod.models;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Vote {
+
     private List<Party> vote;
     private int pollingStation;
     private ProvinceName province;
@@ -14,6 +16,7 @@ public class Vote {
 
         this.pollingStation = pollingStation;
         this.province = province;
+        this.vote = new ArrayList<>();
 
         /*  queremos que la lista tenga 3 lugares,
         donde el indice representa la prioridad del partido político,
@@ -23,7 +26,7 @@ public class Vote {
         switch (vote.size()) {
 
             case 1:
-                this.vote = vote;
+                this.vote.addAll(vote);
                 this.vote.add(Party.BLANK);
                 this.vote.add(Party.BLANK);
                 break;
@@ -32,7 +35,7 @@ public class Vote {
                     this.vote = null;
                     break;
                 }
-                this.vote = vote;
+                this.vote.addAll(vote);
                 this.vote.add(Party.BLANK);
                 break;
             case 3:
@@ -40,7 +43,7 @@ public class Vote {
                     this.vote = null;
                     break;
                 }
-                this.vote = vote;
+                this.vote.addAll(vote);
                 break;
             default:
                 this.vote = null;

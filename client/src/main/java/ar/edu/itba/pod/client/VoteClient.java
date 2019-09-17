@@ -1,5 +1,4 @@
 package ar.edu.itba.pod.client;
-import ar.edu.itba.pod.QueryService;
 import ar.edu.itba.pod.VoteService;
 import ar.edu.itba.pod.client.exceptions.InvalidCSVvotingFileException;
 import ar.edu.itba.pod.client.exceptions.InvalidProgramParametersException;
@@ -75,7 +74,7 @@ public class VoteClient extends Client {
         try {
             voteService.emitVotes(votes);
             System.out.println(votes.size() + " votes registered");
-        } catch (IllegalStateException e) {
+        } catch (InvalidStateException e) {
             logger.error("Invalid state");
             System.out.println("Elections aren't currently being held. No votes can be emitted.");
             System.exit(-1);
@@ -87,7 +86,7 @@ public class VoteClient extends Client {
     }
 
     private static void parseVotes () throws InvalidCSVvotingFileException, IOException, IllegalArgumentException {
-        try (CSVReader csvReader = new CSVReader(new FileReader(parameters.getVotesPath()), ';');) {
+        try (CSVReader csvReader = new CSVReader(new FileReader(parameters.getVotesPath()), ';')) {
             String[] voteData;
             while ((voteData = csvReader.readNext()) != null) {
                 if (voteData.length != 3) {
