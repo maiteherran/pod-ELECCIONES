@@ -9,7 +9,6 @@ import ar.edu.itba.pod.server.enums.Party;
 import ar.edu.itba.pod.server.enums.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.NoSuchPollingStationException;
 import org.apache.commons.lang3.tuple.MutablePair;
-import ar.edu.itba.pod.server.comparators.CountComparator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,7 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Province {
 
     private List<PollingStation> pollingStations = Collections.synchronizedList(new ArrayList<>());
-    private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
+    private TreeSet<MutablePair<Party, Double>> resultsSTV = null;
     private VoteCounter fptpCounter = new VoteCounter();
     private ProvinceName name;
 
@@ -91,14 +90,18 @@ public class Province {
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsSTV () {
-        VoteCounter counter = new VoteCounter();
-        countVotes(counter);
-        return counter.getResultsSTV();
+        writeLock.lock();
+        try {
+            if (resultsSTV == null) {
+                resultsSTV = fptpCounter.getResultsSTV();
+            }
+        } finally {
+            writeLock.unlock();
+        }
+        return resultsSTV;
     }
 
-    public TreeSet<MutablePair<Party, Double>> getPollingStationResultsFPTP (int id)
-            throws NoSuchPollingStationException {
-
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResultsFPTP (int id) {
         readLock.lock();
         try {
             for (PollingStation station: pollingStations) {
@@ -110,6 +113,6 @@ public class Province {
             readLock.unlock();
         }
 
-        throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
+        return null;
     }
 }
