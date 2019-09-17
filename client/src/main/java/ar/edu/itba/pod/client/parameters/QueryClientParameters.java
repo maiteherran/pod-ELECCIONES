@@ -91,7 +91,12 @@ public class QueryClientParameters extends ClientParameters {
                 this.queryType = QueryType.POLLING_STATION_QUERY;
             } else if (properties.containsKey("state")) {
                 this.queryType = QueryType.PROVINCE_QUERY;
-                this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+                try {
+                    this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Inexistent state");
+                    invalid = true;
+                }
             } else {
                 this.queryType = QueryType.NATIONAL_QUERY;
             }

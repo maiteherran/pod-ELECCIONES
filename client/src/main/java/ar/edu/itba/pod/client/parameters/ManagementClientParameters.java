@@ -50,8 +50,6 @@ public class ManagementClientParameters extends ClientParameters {
             printParametersHelp ();
             throw new InvalidProgramParametersException("Invalid program parameters.");
         }
-
-        managementAction = ManagementClientAction.valueOf(action.toUpperCase());
     }
 
     private void printParametersHelp () {
