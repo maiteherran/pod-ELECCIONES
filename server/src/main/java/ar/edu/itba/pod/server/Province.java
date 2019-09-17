@@ -7,42 +7,55 @@ package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
+import ar.edu.itba.pod.server.exceptions.NoSuchPollingStationException;
 import org.apache.commons.lang3.tuple.MutablePair;
-import ar.edu.itba.pod.server.comparators.CountComparator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.TreeSet;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Province {
 
-    private List<PollingStation> pollingStations = new ArrayList<>();
-    private TreeSet<MutablePair<Party, Double>> resultsSTV = new TreeSet<>(new CountComparator());
-    private TreeSet<MutablePair<Party, Double>> resultsFPTP = new TreeSet<>(new CountComparator());
+    private List<PollingStation> pollingStations = Collections.synchronizedList(new ArrayList<>());
+    private TreeSet<MutablePair<Party, Double>> resultsSTV = null;
+    private VoteCounter fptpCounter = new VoteCounter();
     private ProvinceName name;
+
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
 
     public Province (ProvinceName name) {
         this.name = name;
     }
 
     public void addVote(Vote vote) {
+        Optional<PollingStation> maybePollingStation;
 
-        boolean pollingFound = false;
-
-        for (PollingStation p: pollingStations) {
-
-            if (p.getId() == vote.getPollingStation()) {
-                p.addVote(vote);
-                pollingFound = true;
-                break;
-            }
+        readLock.lock();
+        try {
+            maybePollingStation = pollingStations.stream().filter(st -> st.getId() == vote.getPollingStation()).findFirst();
+        } finally {
+            readLock.unlock();
         }
 
-        if (!pollingFound) {
-
-            PollingStation p = new PollingStation(vote.getPollingStation());
-            p.addVote(vote);
-            pollingStations.add(p);
+        writeLock.lock();
+        try {
+            if (maybePollingStation.isPresent()) {
+                maybePollingStation.get().addVote(vote);
+            } else {
+                PollingStation p = new PollingStation(vote.getPollingStation());
+                p.addVote(vote);
+                pollingStations.add(p);
+            }
+            fptpCounter.addVote(vote);
+        } finally {
+            writeLock.unlock();
         }
     }
 
@@ -55,19 +68,51 @@ public class Province {
     }
 
     public void countVotes (VoteCounter counter) {
-        pollingStations.forEach(station -> station.countVotes(counter));
+        readLock.lock();
+        try {
+            pollingStations.forEach(station -> station.countVotes(counter));
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP () {
-        for (PollingStation station: pollingStations) {
-            GenericServiceImpl.addResults(station.getResultsFPTP(), resultsFPTP);
+        TreeSet<MutablePair<Party, Double>> resultsFPTP;
+
+        readLock.lock();
+        try {
+            resultsFPTP = fptpCounter.getResultsFPTP();
+        } finally {
+            readLock.unlock();
         }
+
         return resultsFPTP;
     }
 
     public TreeSet<MutablePair<Party, Double>> getResultsSTV () {
-        VoteCounter counter = new VoteCounter();
-        countVotes(counter);
-        return counter.getResultsSTV();
+        writeLock.lock();
+        try {
+            if (resultsSTV == null) {
+                resultsSTV = fptpCounter.getResultsSTV();
+            }
+        } finally {
+            writeLock.unlock();
+        }
+        return resultsSTV;
+    }
+
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResultsFPTP (int id) {
+        readLock.lock();
+        try {
+            for (PollingStation station: pollingStations) {
+                if (station.getId() == id) {
+                    return station.getResultsFPTP();
+                }
+            }
+        } finally {
+            readLock.unlock();
+        }
+
+        return null;
     }
 }
