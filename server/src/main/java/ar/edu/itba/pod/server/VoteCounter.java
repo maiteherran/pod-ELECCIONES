@@ -47,14 +47,6 @@ public class VoteCounter {
         }
     }
 
-    public double countValidVotes() {
-        double total = 0;
-        for (VoteCounter nextVotesItem : nextVotes) {
-            total += nextVotesItem.votes;
-        }
-        return total;
-    }
-
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
         TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
         nextVotes.forEach(nextVotesItem ->
@@ -75,9 +67,7 @@ public class VoteCounter {
             }
         }
 
-        double validVotes = countValidVotes();
-
-        if (winner.votes > validVotes / 2) {
+        if (winner.votes > votes / 2 || nextVotes.size() == 1) {
             return getResultsFPTP();
         } else {
             nextVotes.remove(loser);
