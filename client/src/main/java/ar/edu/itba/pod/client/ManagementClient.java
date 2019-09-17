@@ -56,7 +56,7 @@ public class ManagementClient extends Client {
                 case OPEN:
                     managementService.openElection();
                     System.out.println("Election started.");
-                    break;
+                    break; 
                 case STATE:
                     ElectionState state = managementService.getElectionState();
                     System.out.println(state.getDescription());
