@@ -91,7 +91,9 @@ public class QueryClientParameters extends ClientParameters {
         } else if (properties.containsKey("state")) {
             this.queryType = QueryType.PROVINCE_QUERY;
             this.provinceName = ProvinceName.valueOf(state.toUpperCase());
+        } else {
+            this.queryType = QueryType.NATIONAL_QUERY;
         }
-        this.queryType = QueryType.NATIONAL_QUERY;
+
     }
 }

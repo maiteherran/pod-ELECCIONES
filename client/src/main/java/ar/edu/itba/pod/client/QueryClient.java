@@ -24,22 +24,6 @@ public class QueryClient extends Client {
     private static QueryService queryService;
     private static TreeSet<MutablePair<Party, Double>> queryResults;
 
-    public static void main(String[] args) {
-        parameters = new QueryClientParameters();
-        try {
-            parameters.validate();
-            queryService = (QueryService) getServiceFromServer(parameters.getServerAddress(), ServiceName.QUERY_SERVICE);
-            executeQueryOnServer();
-        } catch (IllegalArgumentException e) {
-            logger.error("invalid params");
-            System.exit(-1);
-        } catch (RemoteException | NotBoundException | MalformedURLException e) {
-            logger.error("Connection error");
-            System.out.println("An error occured");
-            System.exit(-1);
-        }
-    }
-
     private static void executeQueryOnServer() throws RemoteException, IllegalArgumentException {
         try {
             switch (parameters.getQueryType()) {
@@ -59,6 +43,22 @@ public class QueryClient extends Client {
             resultsToCsv ();
         } catch (InvalidStateException e) {
             System.out.println("Your query couldn't be processed.");
+            System.exit(-1);
+        }
+    }
+
+    public static void main(String[] args) {
+        parameters = new QueryClientParameters();
+        try {
+            parameters.validate();
+            queryService = (QueryService) getServiceFromServer(parameters.getServerAddress(), ServiceName.QUERY_SERVICE);
+            executeQueryOnServer();
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid params");
+            System.exit(-1);
+        } catch (RemoteException  | NotBoundException | MalformedURLException e) {
+            logger.error("Connection error");
+            System.out.println("An error occured");
             System.exit(-1);
         }
     }
