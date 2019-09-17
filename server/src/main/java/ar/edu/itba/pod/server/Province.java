@@ -7,7 +7,6 @@ package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
-import ar.edu.itba.pod.server.exceptions.NoSuchPollingStationException;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.ArrayList;

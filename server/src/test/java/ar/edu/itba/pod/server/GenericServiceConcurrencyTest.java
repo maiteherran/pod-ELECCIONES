@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.server;
 
-import ar.edu.itba.pod.server.enums.Party;
-import ar.edu.itba.pod.server.enums.ProvinceName;
+import ar.edu.itba.pod.util.Party;
+import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
 import ar.edu.itba.pod.server.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;

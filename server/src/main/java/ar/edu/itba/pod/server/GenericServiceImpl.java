@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.server;
 
-import ar.edu.itba.pod.server.comparators.CountComparator;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
