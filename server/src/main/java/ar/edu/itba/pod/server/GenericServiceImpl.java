@@ -13,6 +13,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class GenericServiceImpl {
+    private TreeSet<MutablePair<Party, Double>> resultsAV = null;
     private List<Province> provinces = new ArrayList<>();
     private VoteCounter fptpCounter = new VoteCounter();
 
@@ -66,11 +67,16 @@ public class GenericServiceImpl {
         return p.getResultsSTV();
     }
 
-    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id, ProvinceName name)
-            throws NoSuchPollingStationException, NoSuchProvinceException {
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id)
+            throws NoSuchPollingStationException{
 
-        Province p = getProvince(name);
-        return p.getPollingStationResultsFPTP(id);
+        for (Province p : provinces) {
+            TreeSet<MutablePair<Party, Double>> ret = p.getPollingStationResultsFPTP(id);
+            if (ret != null)
+                return ret;
+        }
+
+        throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
     }
 
     /**
@@ -78,9 +84,15 @@ public class GenericServiceImpl {
      * ejecutivo nacional, mediante el sistema AV.
      */
     public TreeSet<MutablePair<Party, Double>> getNationalResults() {
-        VoteCounter counter = new VoteCounter();
-        provinces.forEach(province -> province.countVotes(counter));
-        return counter.getResultsAV();
+        writeLock.lock();
+        try {
+            if (resultsAV == null) {
+                resultsAV = fptpCounter.getResultsAV();
+            }
+        } finally {
+            writeLock.unlock();
+        }
+        return resultsAV;
     }
 
     public static void addResults (TreeSet<MutablePair<Party, Double>> from, TreeSet<MutablePair<Party, Double>> to) {
