@@ -88,7 +88,7 @@ public class GenericServiceImpl {
         from.forEach( fromPair -> {
             Optional<MutablePair<Party, Double>> maybeToPair = to.stream().filter(toPair -> toPair.getLeft().equals(fromPair.getLeft())).findFirst();
             if (maybeToPair.isPresent()) {
-                maybeToPair.get().setRight((maybeToPair.get().getRight() + fromPair.getRight()) / 2);
+                maybeToPair.get().setRight((maybeToPair.get().getRight() + fromPair.getRight()) / 2.0);
             } else {
                 to.add(new MutablePair<>(fromPair.getLeft(), fromPair.getRight()));
             }
