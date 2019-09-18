@@ -35,7 +35,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_JACKALOPE_1 = 100; /* 0,1% */
     private static final int VOTES_COUNT_BUFFALO_1 = 10; /* 0,01% */
     private static final int VOTES_COUNT_LEOPARD_2 = 63000; /* 63% */
-    private static final int VOTES_COUNT_OWL_2 = 30000; /* 30% */
+    private static final int VOTES_COUNT_GORILLA_2 = 30000; /* 30% */
     private static final int VOTES_COUNT_GORILLA_3 = 20000; /* 20% */
     private static final int VOTES_COUNT_LEOPARD_3 = 20000; /* 20% */
     private static final int VOTES_COUNT_TURTLE_3 = 20000; /* 20% */
@@ -167,8 +167,8 @@ public class GenericServiceConcurrencyTest {
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
         results.forEach(pair -> {
-            if (pair.getLeft().equals(Party.OWL)) {
-                assertEquals((double) VOTES_COUNT_OWL_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
+            if (pair.getLeft().equals(Party.GORILLA)) {
+                assertEquals((double) VOTES_COUNT_GORILLA_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             } else {
                 assertEquals((double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             }
