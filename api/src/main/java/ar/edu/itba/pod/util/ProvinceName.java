@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.server.enums;
+package ar.edu.itba.pod.util;
 
 public enum ProvinceName {
 

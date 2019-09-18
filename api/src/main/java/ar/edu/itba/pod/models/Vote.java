@@ -1,8 +1,7 @@
-package ar.edu.itba.pod.server;
+package ar.edu.itba.pod.models;
 
-import ar.edu.itba.pod.server.enums.Party;
-import ar.edu.itba.pod.server.enums.ProvinceName;
-import ar.edu.itba.pod.server.exceptions.InvalidChoiceException;
+import ar.edu.itba.pod.util.Party;
+import ar.edu.itba.pod.util.ProvinceName;
 
 import java.util.ArrayList;
 import java.util.List;
