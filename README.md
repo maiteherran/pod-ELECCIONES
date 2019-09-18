@@ -38,7 +38,7 @@ Ejecutar en la terminal desde el directorio del proyecto:
 #####Vote Client
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd client/target/tpe-client-1.0-SNAPSHOT
-    $> ./run-VoteClient.sh -DserverAddress=xx.xx.xx.xx:yyyy -DvotesPath= ​fileName
+    $> ./run-VoteClient.sh -DserverAddress=xx.xx.xx.xx:yyyy -DvotesPath=​fileName
     
         donde
                 - xx.xx.xx.xx:yyyy es la dirección IP y el puerto donde está publicado el servicio de
@@ -48,7 +48,7 @@ Ejecutar en la terminal desde el directorio del proyecto:
 #####Query Client
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd client/target/tpe-client-1.0-SNAPSHOT
-    $> ./run-QueryClient.sh -DserverAddress=xx.xx.xx.xx:yyyy [ -Dstate= ​stateName ​| -Did= ​pollingPlaceNumber ​ ] -DoutPath= ​fileName ​ ar.edu.itba.pod.client.QueryClient
+    $> ./run-QueryClient.sh -DserverAddress=xx.xx.xx.xx:yyyy [ -Dstate= ​stateName ​| -Did= ​pollingPlaceNumber ​ ] -DoutPath=fileName
                
      donde
                 - xx.xx.xx.xx:yyyy es la dirección IP y el puerto donde está publicado el servicio de
