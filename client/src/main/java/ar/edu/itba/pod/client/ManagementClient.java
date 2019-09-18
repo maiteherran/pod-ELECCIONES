@@ -31,13 +31,14 @@ public class ManagementClient extends Client {
             managementService = (ManagementService) getServiceFromServer(parameters.getServerAddress(), ServiceName.MANAGEMENT_SERVICE);
         } catch (RemoteException e) {
             logger.error(e.getMessage());
+            System.out.println("An error has occurred while establishing a connection to the server. ");
             System.exit(-1);
         } catch (NotBoundException e) {
             logger.error("The service required isn't in the name registry in the server");
             System.out.println("Server error");
             System.exit(-1);
         } catch (MalformedURLException e) {
-            System.out.println("The server address entered is unreachable."); //todo preguntar
+            System.out.println("The server address entered is invalid.");
             System.exit(-1);
         }
 
@@ -45,7 +46,7 @@ public class ManagementClient extends Client {
             executeActionOnServer();
         } catch (RemoteException e) {
             logger.error("Connection error");
-            System.out.println("A connection error occured");
+            System.out.println("An error has occurred while establishing a connection to the server.");
             System.exit(-1);
         }
     }
@@ -67,7 +68,14 @@ public class ManagementClient extends Client {
                     break;
             }
         } catch (InvalidStateException e) {
-            System.out.println(managementService.getElectionState().getDescription()+ "\nThe action requested couldn't be processed.");
+            switch (parameters.getManagementAction()) {
+                case OPEN:
+                    System.out.println(managementService.getElectionState().getDescription()  + "It can't be opened again.");
+                    break;
+                case CLOSE:
+                    System.out.println(managementService.getElectionState().getDescription() + "It can't be closed.");
+                    break;
+            }
         }
     }
 }

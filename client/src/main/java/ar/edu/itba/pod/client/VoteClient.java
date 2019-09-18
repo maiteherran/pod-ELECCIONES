@@ -8,7 +8,9 @@ import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.util.ServiceName;
+import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +48,14 @@ public class VoteClient extends Client {
             voteService = (VoteService) getServiceFromServer(parameters.getServerAddress(), ServiceName.VOTE_SERVICE);
         } catch (RemoteException e) {
             logger.error(e.getMessage());
+            System.out.println("An error has occurred while establishing a connection to the server. ");
             System.exit(-1);
         } catch (NotBoundException e) {
             logger.error("The service required isn't in the name registry in the server");
-            System.out.println("Server error");
+            System.out.println("Server error.");
             System.exit(-1);
         } catch (MalformedURLException e) {
-            System.out.println("The server address entered is unreachable."); //todo preguntar
+            System.out.println("The server address entered is invalid.");
             System.exit(-1);
         }
 
@@ -60,11 +63,11 @@ public class VoteClient extends Client {
             parseVotes();
         } catch (InvalidCSVvotingFileException | IllegalArgumentException e) {
             logger.error("Invalid csv file");
-            System.out.println("The voting file's format is invalid");
+            System.out.println("The voting file's format is invalid. Please provide a valid one.");
             System.exit(-1);
         } catch (FileNotFoundException e) {
             logger.error("File not found");
-            System.out.println("The voting file wasn't found");
+            System.out.println("The voting file wasn't found. Please provide a valid one.");
             System.exit(-1);
         } catch (IOException e) {
             logger.error("IO error");
@@ -73,20 +76,26 @@ public class VoteClient extends Client {
 
         try {
             voteService.emitVotes(votes);
-            System.out.println(votes.size() + " votes registered");
+            if (votes.size() == 1) {
+                System.out.println(votes.size() + " vote registered");
+            } else {
+                System.out.println(votes.size() + " votes registered");
+            }
         } catch (InvalidStateException e) {
             logger.error("Invalid state");
             System.out.println("Elections aren't currently being held. No votes can be emitted.");
             System.exit(-1);
         } catch (RemoteException e) {
             logger.error("Connection error");
-            System.out.println("An error occured");
+            System.out.println("An error has occurred while establishing a connection to the server. ");
             System.exit(-1);
         }
     }
 
     private static void parseVotes () throws InvalidCSVvotingFileException, IOException, IllegalArgumentException {
-        try (CSVReader csvReader = new CSVReader(new FileReader(parameters.getVotesPath()), ';')) {
+        try (CSVReader csvReader = new CSVReaderBuilder(new FileReader(parameters.getVotesPath()))
+                .withCSVParser(new CSVParserBuilder().withSeparator(';').build())
+                .build()) {
             String[] voteData;
             while ((voteData = csvReader.readNext()) != null) {
                 if (voteData.length != 3) {

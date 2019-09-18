@@ -38,7 +38,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public void openElection() throws RemoteException, InvalidStateException { //TODO FRANCO SE PUEDE BORRAR EL THROWS DE LA REMOTE EXCEPTION?
+    public void openElection() throws RemoteException, InvalidStateException {
         synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.PENDING)) {
                 electionState = ElectionState.STARTED;
@@ -54,7 +54,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public void closeElection() throws InvalidStateException {
+    public void closeElection() throws RemoteException, InvalidStateException {
        synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.STARTED)) {
                 electionState = ElectionState.ENDED;
@@ -65,7 +65,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public void emitVotes(List<Vote> votes) throws InvalidStateException {
+    public void emitVotes(List<Vote> votes) throws RemoteException, InvalidStateException {
         synchronized (electionStateLock) {
             if (!electionState.equals(ElectionState.STARTED)) {
                 throw new InvalidStateException(electionState.getDescription());
@@ -81,7 +81,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
      * ejecutivo nacional, mediante el sistema AV.
      */
     @Override
-    public TreeSet<MutablePair<Party, Double>> getNationalResults() throws InvalidStateException {
+    public TreeSet<MutablePair<Party, Double>> getNationalResults() throws RemoteException, InvalidStateException {
         synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.STARTED)) {
                 return getResultsFPTP();
