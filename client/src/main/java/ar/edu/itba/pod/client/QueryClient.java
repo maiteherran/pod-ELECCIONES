@@ -102,8 +102,7 @@ public class QueryClient extends Client {
 
             for (MutablePair<Party, Double> pair : queryResults){
                 String[] outputline = new String[2];
-                //outputline[0] = Math.round((pair.getRight() * 100.0 * 100)/100) + "%";
-                outputline[0] = Double.valueOf(new DecimalFormat("#.##").format(pair.getRight() * 100.0)) + "%";
+                outputline[0] = String.format("%.2f", pair.getRight() * 100.0) + "%";
                 outputline[1] = String.valueOf(pair.getLeft());
                 writer.writeNext(outputline);
             }
