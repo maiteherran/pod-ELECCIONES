@@ -95,7 +95,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         throw new InvalidStateException(electionState.getDescription());
     }
 
-    public TreeSet<MutablePair<Party, Double>> getResultsAV() throws InvalidStateException {
+    private TreeSet<MutablePair<Party, Double>> getResultsAV() throws InvalidStateException {
         writeLock.lock();
         try {
             if (resultsAV == null) {
@@ -107,7 +107,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         return resultsAV;
     }
 
-    public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
+    TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
         TreeSet<MutablePair<Party, Double>> finalResults;
 
         readLock.lock();
@@ -152,7 +152,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
     }
 
-    public void addVote(Vote vote) {
+    void addVote(Vote vote) {
         Optional<Province> maybeProvince = provinces.stream().filter(p -> p.getName().equals(vote.getProvince())).findFirst();
         /* podemos asumir que la provincia se encuentra dentro de las 3 ya agregadas --> no va a ser null el Optional */
         if (maybeProvince.isPresent()) {
