@@ -17,7 +17,7 @@ public class PollingStation {
 
     private final int id;
     private List<Vote> votes = new ArrayList<>();
-    private VoteCounter fptpCounter = new VoteCounter();
+    private VoteCounter counter = new VoteCounter();
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
@@ -43,7 +43,7 @@ public class PollingStation {
         writeLock.lock();
         try {
             votes.add(vote);
-            fptpCounter.addVote(vote);
+            counter.addVote(vote);
         } finally {
             writeLock.unlock();
         }
@@ -54,7 +54,7 @@ public class PollingStation {
 
         readLock.lock();
         try {
-            resultsFPTP = fptpCounter.getResultsFPTP();
+            resultsFPTP = counter.getResultsFPTP();
         } finally {
             readLock.unlock();
         }

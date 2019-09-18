@@ -4,7 +4,6 @@ import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
-import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
 import ar.edu.itba.pod.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Before;
@@ -14,6 +13,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
@@ -24,7 +24,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_GORILLA_1 = 300000; /* 30% */
     private static final int VOTES_COUNT_LEOPARD_1 = 170000; /* 21% */
     private static final int VOTES_COUNT_TURTLE_1 = 160000; /* 16% */
-    private static final int VOTES_COUNT_OWL_1 = 130001; /* 11% */
+    private static final int VOTES_COUNT_OWL_1 = 130000; /* 11% */
     private static final int VOTES_COUNT_TIGER_1 = 100000; /* 10% */
     private static final int VOTES_COUNT_TARSIER_1 = 70000; /* 5% */
     private static final int VOTES_COUNT_MONKEY_1 = 25000; /* 2,5% */
@@ -36,37 +36,23 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_BUFFALO_1 = 100; /* 0,01% */
     private static final int VOTES_COUNT_LEOPARD_2 = 630000; /* 63% */
     private static final int VOTES_COUNT_OWL_2 = 300000; /* 30% */
-    private static final int THREAD_COUNT = 1;
-    private static final double LAMBDA = 0.001;
+    private static final int VOTES_COUNT_GORILLA_3 = 200000; /* 20% */
+    private static final int VOTES_COUNT_LEOPARD_3 = 200000; /* 20% */
+    private static final int VOTES_COUNT_TURTLE_3 = 200000; /* 20% */
+    private static final int VOTES_COUNT_OWL_3 = 200000; /* 20% */
+    private static final int VOTES_COUNT_TARSIER_3 = 119000; /* 11,9% */
+    private static final int THREAD_COUNT = 10;
+    private static final double LAMBDA1 = 0.001;
+    private static final double LAMBDA2 = 1;
 
-    /* debería ser GenericService */
-    private GenericServiceImpl genericService;
+    private static GenericServiceImpl genericService;
 
-    private final Map<Party, Integer> partyCounts = new HashMap<>();
+    private static final ArrayList<ProvinceName> provinceNames = new ArrayList<>();
 
-    private final ArrayList<ProvinceName> provinceNames = new ArrayList<>();
+    private static HashMap<Party, Integer> partyCounts = new HashMap<>();
 
-    private final ArrayList<Party> parties = new ArrayList<>();
-
-    private final Runnable election = () -> {
-        System.out.println("Entro thread");
-
+    private static final Runnable election = () -> {
         Random rand = new Random();
-        /*
-        Para FPTP:
-        partyCounts.forEach( (party, count) -> {
-
-            ArrayList<Party> vote = new ArrayList<>();
-            vote.add(party);
-            int i;
-            for (i = 0; i < count/THREAD_COUNT; i++) {
-                try {
-                    genericService.addVote(rand.nextInt(1000), provinceNames.get(rand.nextInt(3)), vote);
-                } catch (IllegalVoteException e) {
-                    System.out.println(e.toString());
-                }
-            }
-        });*/
         partyCounts.forEach( (party, count) -> {
 
             for (int i=0; i < count; i++) {
@@ -136,11 +122,9 @@ public class GenericServiceConcurrencyTest {
             }
 
         });
-
-        System.out.println("Salgo thread");
     };
 
-    private final ExecutorService pool = Executors.newFixedThreadPool(THREAD_COUNT);
+    private static final ExecutorService pool = Executors.newFixedThreadPool(THREAD_COUNT);
 
     @Before
     public final void before () {
@@ -161,71 +145,76 @@ public class GenericServiceConcurrencyTest {
         provinceNames.add(ProvinceName.JUNGLE);
         provinceNames.add(ProvinceName.SAVANNAH);
         provinceNames.add(ProvinceName.TUNDRA);
-        parties.add(Party.JACKALOPE);
-        parties.add(Party.GORILLA);
-        parties.add(Party.LYNX);
-        parties.add(Party.LEOPARD);
-        parties.add(Party.OWL);
-        parties.add(Party.BUFFALO);
-        parties.add(Party.TARSIER);
-        parties.add(Party.TIGER);
-        parties.add(Party.TURTLE);
-        parties.add(Party.WHITE_GORILLA);
-        parties.add(Party.WHITE_TIGER);
-        parties.add(Party.SNAKE);
-        parties.add(Party.MONKEY);
-
     }
 
     @Test
     public final void countingFPTPVotes () throws InterruptedException, InvalidStateException, RemoteException {
         genericService.openElection();
 
-        final Thread[] threads = new Thread[THREAD_COUNT];
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            threads[i] = new Thread(election, "thread" + i);
-            threads[i].start();
-        }
-        for (int j = 0; j < THREAD_COUNT; j++) {
-            threads[j].join();
-        }
+        submitThreads();
 
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getResultsFPTP();
-        genericService.printResults(results);
-        results.forEach(pair -> {
-            assertEquals(pair.right, (double) partyCounts.get(pair.left) / (double) VOTES_COUNT, LAMBDA);
-        });
+        results.forEach(pair -> assertEquals((double) partyCounts.get(pair.left) / (double) VOTES_COUNT, pair.right, LAMBDA1));
     }
 
     @Test
     public final void countingAVVotes () throws InterruptedException, InvalidStateException, RemoteException {
         genericService.openElection();
 
-        final Thread[] threads = new Thread[THREAD_COUNT];
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            threads[i] = new Thread(election, "thread" + i);
-            threads[i].start();
-        }
-        for (int j = 0; j < THREAD_COUNT; j++) {
-            threads[j].join();
-        }
+        startThreads();
 
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
-        genericService.printResults(results);
         results.forEach(pair -> {
             if (pair.getLeft().equals(Party.OWL)) {
-                assertEquals(pair.right, (double) VOTES_COUNT_OWL_2 / (double) VOTES_COUNT, LAMBDA);
+                assertEquals((double) VOTES_COUNT_OWL_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             } else {
-                assertEquals(pair.right, (double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, LAMBDA);
+                assertEquals((double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             }
         });
     }
 
     @Test
     public final void countingSTVVotes () throws InterruptedException, InvalidStateException, RemoteException {
-       genericService.openElection();
+        genericService.openElection();
+
+        startThreads();
+
+        genericService.closeElection();
+
+        provinceNames.forEach( p -> {
+            TreeSet<MutablePair<Party, Double>> results = null;
+            try {
+                results = genericService.getProvinceResults(p);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            assert results != null;
+            results.forEach(pair -> {
+                switch (pair.left) {
+                    case GORILLA:
+                        assertEquals((double) VOTES_COUNT_GORILLA_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
+                        break;
+                    case LEOPARD:
+                        assertEquals((double) VOTES_COUNT_LEOPARD_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
+                        break;
+                    case TURTLE:
+                        assertEquals((double) VOTES_COUNT_TURTLE_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
+                        break;
+                    case OWL:
+                        assertEquals((double) VOTES_COUNT_OWL_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
+                        break;
+                    case TARSIER:
+                        assertEquals((double) VOTES_COUNT_TARSIER_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
+                        break;
+
+                }
+            });
+        });
+    }
+
+    private static void startThreads() throws InterruptedException {
 
         final Thread[] threads = new Thread[THREAD_COUNT];
         for (int i = 0; i < THREAD_COUNT; i++) {
@@ -235,17 +224,16 @@ public class GenericServiceConcurrencyTest {
         for (int j = 0; j < THREAD_COUNT; j++) {
             threads[j].join();
         }
+    }
 
-        genericService.closeElection();
+    private static void submitThreads() throws InterruptedException {
 
-        for (ProvinceName p : provinceNames) {
-            try {
-                TreeSet<MutablePair<Party, Double>> results = genericService.getProvinceResults(p);
-                this.debbuging(results);
-            } catch (NoSuchProvinceException e) {
-                e.printStackTrace();
-            }
+        for (int i=0; i < THREAD_COUNT; i++) {
+            pool.submit(election);
         }
+        pool.shutdown();
+        pool.awaitTermination(3, TimeUnit.MINUTES);
+
     }
 
     private void debbuging(TreeSet<MutablePair<Party, Double>> results) throws NoSuchProvinceException {

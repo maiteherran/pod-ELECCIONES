@@ -23,7 +23,7 @@ public class Province {
 
     private List<PollingStation> pollingStations = Collections.synchronizedList(new ArrayList<>());
     private TreeSet<MutablePair<Party, Double>> resultsSTV = null;
-    private VoteCounter fptpCounter = new VoteCounter();
+    private VoteCounter counter = new VoteCounter();
     private ProvinceName name;
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -53,7 +53,7 @@ public class Province {
                 p.addVote(vote);
                 pollingStations.add(p);
             }
-            fptpCounter.addVote(vote);
+            counter.addVote(vote);
         } finally {
             writeLock.unlock();
         }
@@ -81,7 +81,7 @@ public class Province {
 
         readLock.lock();
         try {
-            resultsFPTP = fptpCounter.getResultsFPTP();
+            resultsFPTP = counter.getResultsFPTP();
         } finally {
             readLock.unlock();
         }
@@ -93,7 +93,7 @@ public class Province {
         writeLock.lock();
         try {
             if (resultsSTV == null) {
-                resultsSTV = fptpCounter.getResultsSTV();
+                resultsSTV = counter.getResultsSTV();
             }
         } finally {
             writeLock.unlock();
