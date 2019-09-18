@@ -11,9 +11,14 @@ public class CountComparator implements Comparator<MutablePair<Party, Double>>, 
     public int compare(MutablePair<Party, Double> o1, MutablePair<Party, Double> o2) {
 
         int compare = Double.compare(o2.right, o1.right);
-        if (compare == 0 && o1.left.getName().compareTo(o2.left.getName()) >= 0) {
-            return 1;
+
+        if (compare == 0) {
+            if (o1.left.getName().compareTo(o2.left.getName()) >= 0)
+                return 1;
+            else
+                return -1;
         }
+
         return compare;
     }
 }

@@ -22,11 +22,11 @@ public class GenericServiceConcurrencyTest {
 
     private static final int VOTES_COUNT = 100000;
     private static final int VOTES_COUNT_GORILLA_1 = 30000; /* 30% */
-    private static final int VOTES_COUNT_LEOPARD_1 = 17000; /* 21% */
+    private static final int VOTES_COUNT_LEOPARD_1 = 17000; /* 17% */
     private static final int VOTES_COUNT_TURTLE_1 = 16000; /* 16% */
-    private static final int VOTES_COUNT_OWL_1 = 13000; /* 11% */
+    private static final int VOTES_COUNT_OWL_1 = 13000; /* 13% */
     private static final int VOTES_COUNT_TIGER_1 = 10000; /* 10% */
-    private static final int VOTES_COUNT_TARSIER_1 = 7000; /* 5% */
+    private static final int VOTES_COUNT_TARSIER_1 = 7000; /* 7% */
     private static final int VOTES_COUNT_MONKEY_1 = 2500; /* 2,5% */
     private static final int VOTES_COUNT_LYNX_1 = 2400; /* 2,4% */
     private static final int VOTES_COUNT_WHITE_TIGER_1 = 870; /* 0,87% */
@@ -34,8 +34,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_SNAKE_1 = 500; /* 0,5% */
     private static final int VOTES_COUNT_JACKALOPE_1 = 100; /* 0,1% */
     private static final int VOTES_COUNT_BUFFALO_1 = 10; /* 0,01% */
-    private static final int VOTES_COUNT_LEOPARD_2 = 63000; /* 63% */
-    private static final int VOTES_COUNT_GORILLA_2 = 30000; /* 30% */
+    private static final int VOTES_COUNT_LEOPARD_2 = 76000; /* 76% */
     private static final int VOTES_COUNT_GORILLA_3 = 20000; /* 20% */
     private static final int VOTES_COUNT_LEOPARD_3 = 20000; /* 20% */
     private static final int VOTES_COUNT_TURTLE_3 = 20000; /* 20% */
@@ -166,10 +165,9 @@ public class GenericServiceConcurrencyTest {
 
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
+        genericService.printResults(results);
         results.forEach(pair -> {
-            if (pair.getLeft().equals(Party.GORILLA)) {
-                assertEquals((double) VOTES_COUNT_GORILLA_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
-            } else {
+            if (pair.getLeft().equals(Party.LEOPARD)) {
                 assertEquals((double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             }
         });

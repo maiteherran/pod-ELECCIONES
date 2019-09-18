@@ -62,7 +62,8 @@ public class VoteCounter {
             if (nextVotesItem.votes > winner.votes) {
                 winner = nextVotesItem;
             }
-            if (nextVotesItem.votes < loser.votes) {
+            if (nextVotesItem.votes < loser.votes  || (nextVotesItem.votes == loser.votes &&
+                    nextVotesItem.party.getName().compareTo(loser.party.getName()) >= 0)) {
                 loser = nextVotesItem;
             }
         }
@@ -88,10 +89,12 @@ public class VoteCounter {
             loser = nextVotes.get(0);
 
             for (VoteCounter nextVotesItem : nextVotes) {
-                if (nextVotesItem.votes > winner.votes) {
+                if (nextVotesItem.votes > winner.votes || (nextVotesItem.votes == winner.votes &&
+                        nextVotesItem.party.getName().compareTo(winner.party.getName()) <= 0)) {
                     winner = nextVotesItem;
                 }
-                if (nextVotesItem.votes < loser.votes) {
+                if (nextVotesItem.votes < loser.votes  || (nextVotesItem.votes == loser.votes &&
+                        nextVotesItem.party.getName().compareTo(loser.party.getName()) >= 0)) {
                     loser = nextVotesItem;
                 }
             }
