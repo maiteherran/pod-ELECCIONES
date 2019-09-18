@@ -11,7 +11,6 @@ import ar.edu.itba.pod.util.ProvinceName;
 import ar.edu.itba.pod.exceptions.NoSuchPollingStationException;
 import ar.edu.itba.pod.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -22,7 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class GenericServiceImpl implements ManagementService, VoteService, QueryService {
     private TreeSet<MutablePair<Party, Double>> resultsAV = null;
     private List<Province> provinces = new ArrayList<>();
-    private VoteCounter fptpCounter = new VoteCounter();
+    private VoteCounter counter = new VoteCounter();
 
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
@@ -55,7 +54,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public void closeElection() throws RemoteException, InvalidStateException {
+    public void closeElection() throws InvalidStateException {
        synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.STARTED)) {
                 electionState = ElectionState.ENDED;
@@ -66,7 +65,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public void emitVotes(List<Vote> votes) throws RemoteException, InvalidStateException {
+    public void emitVotes(List<Vote> votes) throws InvalidStateException {
         synchronized (electionStateLock) {
             if (!electionState.equals(ElectionState.STARTED)) {
                 throw new InvalidStateException(electionState.getDescription());
@@ -77,11 +76,11 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         }
     }
 
-    @Override
     /**
      * Donde se elegirá a un partido político ganador para ocupar un cargo
      * ejecutivo nacional, mediante el sistema AV.
      */
+    @Override
     public TreeSet<MutablePair<Party, Double>> getNationalResults() throws InvalidStateException {
         synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.STARTED)) {
@@ -100,7 +99,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         writeLock.lock();
         try {
             if (resultsAV == null) {
-                resultsAV = fptpCounter.getResultsAV();
+                resultsAV = counter.getResultsAV();
             }
         } finally {
             writeLock.unlock();
@@ -113,7 +112,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
 
         readLock.lock();
         try {
-            finalResults = fptpCounter.getResultsFPTP();
+            finalResults = counter.getResultsFPTP();
         } finally {
             readLock.unlock();
         }
@@ -121,9 +120,8 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         return finalResults;
     }
 
-
     @Override
-    public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name)  throws NoSuchProvinceException, InvalidStateException {
+    public TreeSet<MutablePair<Party, Double>> getProvinceResults (ProvinceName name) throws NoSuchProvinceException, InvalidStateException {
         Province p = getProvince(name);
         synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.STARTED)) {
@@ -138,8 +136,7 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
     }
 
     @Override
-    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id)
-            throws NoSuchPollingStationException, InvalidStateException {
+    public TreeSet<MutablePair<Party, Double>> getPollingStationResults (int id) throws NoSuchPollingStationException, InvalidStateException {
 
         synchronized (electionStateLock) {
             if (electionState.equals(ElectionState.PENDING))
@@ -155,16 +152,17 @@ public class GenericServiceImpl implements ManagementService, VoteService, Query
         throw new NoSuchPollingStationException("Polling station number " + id + " does not exists.");
     }
 
-
     public void addVote(Vote vote) {
         Optional<Province> maybeProvince = provinces.stream().filter(p -> p.getName().equals(vote.getProvince())).findFirst();
         /* podemos asumir que la provincia se encuentra dentro de las 3 ya agregadas --> no va a ser null el Optional */
-        Province p = maybeProvince.get();
-        p.addVote(vote);
+        if (maybeProvince.isPresent()) {
+            Province p = maybeProvince.get();
+            p.addVote(vote);
+        }
 
         writeLock.lock();
         try {
-            fptpCounter.addVote(vote);
+            counter.addVote(vote);
         } finally {
             writeLock.unlock();
         }

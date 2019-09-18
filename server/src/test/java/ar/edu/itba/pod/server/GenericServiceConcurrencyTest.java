@@ -4,7 +4,6 @@ import ar.edu.itba.pod.exceptions.InvalidStateException;
 import ar.edu.itba.pod.models.Vote;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
-import ar.edu.itba.pod.server.exceptions.IllegalVoteException;
 import ar.edu.itba.pod.exceptions.NoSuchProvinceException;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Before;
@@ -36,7 +35,7 @@ public class GenericServiceConcurrencyTest {
     private static final int VOTES_COUNT_JACKALOPE_1 = 1000; /* 0,1% */
     private static final int VOTES_COUNT_BUFFALO_1 = 100; /* 0,01% */
     private static final int VOTES_COUNT_LEOPARD_2 = 630000; /* 63% */
-    private static final int VOTES_COUNT_GORILLA_2 = 300000; /* 30% */
+    private static final int VOTES_COUNT_OWL_2 = 300000; /* 30% */
     private static final int VOTES_COUNT_GORILLA_3 = 200000; /* 20% */
     private static final int VOTES_COUNT_LEOPARD_3 = 200000; /* 20% */
     private static final int VOTES_COUNT_TURTLE_3 = 200000; /* 20% */
@@ -168,8 +167,8 @@ public class GenericServiceConcurrencyTest {
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
         results.forEach(pair -> {
-            if (pair.getLeft().equals(Party.GORILLA)) {
-                assertEquals((double) VOTES_COUNT_GORILLA_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
+            if (pair.getLeft().equals(Party.OWL)) {
+                assertEquals((double) VOTES_COUNT_OWL_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             } else {
                 assertEquals((double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
             }
@@ -185,8 +184,14 @@ public class GenericServiceConcurrencyTest {
         genericService.closeElection();
 
         provinceNames.forEach( p -> {
-            TreeSet<MutablePair<Party, Double>> results = genericService.getProvinceResults(p);
-            results.forEach( pair -> {
+            TreeSet<MutablePair<Party, Double>> results = null;
+            try {
+                results = genericService.getProvinceResults(p);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            assert results != null;
+            results.forEach(pair -> {
                 switch (pair.left) {
                     case GORILLA:
                         assertEquals((double) VOTES_COUNT_GORILLA_3 / (double) VOTES_COUNT, pair.right, LAMBDA2);
