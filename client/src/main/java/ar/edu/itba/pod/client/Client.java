@@ -1,12 +1,15 @@
 package ar.edu.itba.pod.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ar.edu.itba.pod.util.ServiceName;
 
-public class Client {
-    private static Logger logger = LoggerFactory.getLogger(Client.class);
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-    public static void main(String[] args) {
-        logger.info("tpe Client Starting ...");
+abstract class Client {
+    static Remote getServiceFromServer(final String serverAddress, final ServiceName service) throws RemoteException, NotBoundException, MalformedURLException {
+        return Naming.lookup("//" + serverAddress + "/" + service.getServiceName());
     }
 }
