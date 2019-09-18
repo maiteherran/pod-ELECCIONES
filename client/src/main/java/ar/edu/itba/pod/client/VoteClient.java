@@ -27,7 +27,7 @@ public class VoteClient extends Client {
     private static Logger logger = LoggerFactory.getLogger(VoteClient.class);
     private static VoteService voteService;
     private static  VoteClientParameters parameters;
-    private static List<Vote> votes;
+    private static List<Vote> votes = new LinkedList<>();
     private static final int POLLING_STATION = 0;
     private static final int PROVINCE = 1 ;
     private static final int PARTIES = 2;

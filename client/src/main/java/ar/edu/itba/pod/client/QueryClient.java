@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.text.DecimalFormat;
 import java.util.TreeSet;
 
 
@@ -26,7 +27,7 @@ public class QueryClient extends Client {
     private static Logger logger = LoggerFactory.getLogger(QueryClient.class);
     private static QueryClientParameters parameters;
     private static QueryService queryService;
-    private static TreeSet<MutablePair<Party, Double>> queryResults;
+    private static TreeSet<MutablePair<Party, Double>> queryResults = new TreeSet<>();
 
     public static void main(String[] args) {
         parameters = new QueryClientParameters();
@@ -55,7 +56,7 @@ public class QueryClient extends Client {
         try {
             executeQueryOnServer();
         } catch (RemoteException e) {
-            logger.error("Connection error");
+            logger.error(e.getMessage(), e);
             System.out.println("A connection error occured");
             System.exit(-1);
         }
@@ -93,7 +94,8 @@ public class QueryClient extends Client {
                 CSVWriter.DEFAULT_LINE_END)) {
             for (MutablePair<Party, Double> pair : queryResults){
                 String[] outputline = new String[2];
-                outputline[0] = Math.round(pair.getRight() * 100.0 * 10000.0)/10000.0 + "%";
+                //outputline[0] = Math.round((pair.getRight() * 100.0 * 100)/100) + "%";
+                outputline[0] = Double.valueOf(new DecimalFormat("#.##").format(pair.getRight() * 100.0)) + "%";
                 outputline[1] = String.valueOf(pair.getLeft());
                 writer.writeNext(outputline);
             }

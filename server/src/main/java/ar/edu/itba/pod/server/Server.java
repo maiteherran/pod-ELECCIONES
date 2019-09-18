@@ -16,6 +16,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Server {
     private static Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final int port = 1099;
 
     public static void main(String[] args) {
         logger.info("tpe Server Starting ...");
@@ -25,7 +26,7 @@ public class Server {
         final Registry registry;
         try {
             remote = UnicastRemoteObject.exportObject(electionsService, 0);
-            registry = LocateRegistry.getRegistry();
+            registry = LocateRegistry.createRegistry(port);
             registry.rebind(ServiceName.MANAGEMENT_SERVICE.getServiceName(), remote);
             registry.rebind(ServiceName.QUERY_SERVICE.getServiceName(), remote);
             registry.rebind(ServiceName.VOTE_SERVICE.getServiceName(), remote);
@@ -33,8 +34,6 @@ public class Server {
             logger.error("Remote error");
             System.exit(-1);
         }
-
-
 
 
 

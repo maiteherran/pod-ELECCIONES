@@ -1,15 +1,16 @@
-package ar.edu.itba.pod.server.comparators;
+package ar.edu.itba.pod.comparators;
 
 import ar.edu.itba.pod.util.Party;
 import org.apache.commons.lang3.tuple.MutablePair;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class CountComparator implements Comparator<MutablePair<Party, Double>> {
+public class CountComparator implements Comparator<MutablePair<Party, Double>>, Serializable {
     @Override
     public int compare(MutablePair<Party, Double> o1, MutablePair<Party, Double> o2) {
 
-        int compare = Double.compare(o1.right, o2.right);
+        int compare = Double.compare(o2.right, o1.right);
         if (compare == 0) {
             return 1;
         }

@@ -41,13 +41,13 @@ public class VoteClientParameters extends ClientParameters {
     }
 
     private void printParametersHelp () {
-        System.out.println(
-                "Here's an example of how you should execute the VoteClient from command line: \n" +
-                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -DvotesPath=fileName ar.edu.itba.pod.client.VoteClient\n" +
-                "where, \n" +
-                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
-                "- fileName: path to citizinen voting file"
-        );
+//        System.out.println(
+//                "Here's an example of how you should execute the VoteClient from command line: \n" +
+//                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -DvotesPath=fileName ar.edu.itba.pod.client.VoteClient\n" +
+//                "where, \n" +
+//                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
+//                "- fileName: path to citizinen voting file"
+//        );
     }
 
 

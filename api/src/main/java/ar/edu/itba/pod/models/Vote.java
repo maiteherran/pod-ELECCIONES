@@ -3,10 +3,11 @@ package ar.edu.itba.pod.models;
 import ar.edu.itba.pod.util.Party;
 import ar.edu.itba.pod.util.ProvinceName;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Vote {
+public class Vote implements Serializable {
 
     private List<Party> vote;
     private int pollingStation;
