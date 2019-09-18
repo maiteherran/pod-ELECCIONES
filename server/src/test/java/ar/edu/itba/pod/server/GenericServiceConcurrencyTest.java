@@ -165,7 +165,6 @@ public class GenericServiceConcurrencyTest {
 
         genericService.closeElection();
         TreeSet<MutablePair<Party, Double>> results = genericService.getNationalResults();
-        genericService.printResults(results);
         results.forEach(pair -> {
             if (pair.getLeft().equals(Party.LEOPARD)) {
                 assertEquals((double) VOTES_COUNT_LEOPARD_2 / (double) VOTES_COUNT, pair.right, LAMBDA1);
