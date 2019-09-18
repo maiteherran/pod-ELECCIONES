@@ -109,15 +109,15 @@ public class QueryClientParameters extends ClientParameters {
     }
 
     private void printParametersHelp () {
-        System.out.println(
-                "Here's an example of how you should execute the QueryClient from command line: \n" +
-                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName  [ -Dstate=stateName | -Did=pollingPlaceNumber] -DoutPath= fileName ar.edu.itba.pod.client.QueryClient\n" +
-                "where, \n" +
-                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
-                "- stateName: name of province chosen to solve query #2\n" +
-                "- pollingPlaceNumber: number of table chosen to solve quer #3 \n" +
-                " - fileName: path to file where the results of the query will be placed \n" +
-                "If -Dstate and -Did are omitted, then query #1 will be executed\n"
-        );
+//        System.out.println(
+//                "Here's an example of how you should execute the QueryClient from command line: \n" +
+//                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName  [ -Dstate=stateName | -Did=pollingPlaceNumber] -DoutPath= fileName ar.edu.itba.pod.client.QueryClient\n" +
+//                "where, \n" +
+//                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
+//                "- stateName: name of province chosen to solve query #2\n" +
+//                "- pollingPlaceNumber: number of table chosen to solve quer #3 \n" +
+//                " - fileName: path to file where the results of the query will be placed \n" +
+//                "If -Dstate and -Did are omitted, then query #1 will be executed\n"
+//        );
     }
 }

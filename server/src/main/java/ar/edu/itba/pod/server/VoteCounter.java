@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.server;
 
 import ar.edu.itba.pod.models.Vote;
-import ar.edu.itba.pod.server.comparators.CountComparator;
+import ar.edu.itba.pod.comparators.CountComparator;
 import ar.edu.itba.pod.util.Party;
 import org.apache.commons.lang3.tuple.MutablePair;
 
@@ -47,14 +47,6 @@ public class VoteCounter {
         }
     }
 
-    public double countValidVotes() {
-        double total = 0;
-        for (VoteCounter nextVotesItem : nextVotes) {
-            total += nextVotesItem.votes;
-        }
-        return total;
-    }
-
     public TreeSet<MutablePair<Party, Double>> getResultsFPTP() {
         TreeSet<MutablePair<Party, Double>> resultsAV = new TreeSet<>(new CountComparator());
         nextVotes.forEach(nextVotesItem ->
@@ -75,9 +67,7 @@ public class VoteCounter {
             }
         }
 
-        double validVotes = countValidVotes();
-
-        if (winner.votes > validVotes / 2) {
+        if (winner.votes > votes / 2 || nextVotes.size() == 1) {
             return getResultsFPTP();
         } else {
             nextVotes.remove(loser);

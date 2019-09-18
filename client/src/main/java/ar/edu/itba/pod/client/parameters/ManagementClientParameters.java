@@ -53,15 +53,15 @@ public class ManagementClientParameters extends ClientParameters {
     }
 
     private void printParametersHelp () {
-        System.out.println(
-                "Here's an example of how you should execute the ManagementClient from command line: \n" +
-                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName ar.edu.itba.pod.client.ManagementClient\n" +
-                "where, \n" +
-                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
-                "- actionName: name of the action to perform:\n" +
-                "       o open: \n" +
-                "       o state: \n" +
-                "       o close: \n"
-        );
+//        System.out.println(
+//                "Here's an example of how you should execute the ManagementClient from command line: \n" +
+//                "$> java -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName ar.edu.itba.pod.client.ManagementClient\n" +
+//                "where, \n" +
+//                "- xx.xx.xx.xx:yyyy: is the IP address and port where the service is published\n" +
+//                "- actionName: name of the action to perform:\n" +
+//                "       o open: \n" +
+//                "       o state: \n" +
+//                "       o close: \n"
+//        );
     }
 }
