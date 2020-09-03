@@ -1,18 +1,18 @@
-#TP1 - PROGRAMACIÓN DE OBJETOS DISTRIBUIDOS 
-##ELECCIONES
+# TP1 - PROGRAMACIÓN DE OBJETOS DISTRIBUIDOS 
+## ELECCIONES
 
-#Pre-requisitos
+# Pre-requisitos
 Instalar maven
 
-#Compilación
+# Compilación
 1. Situarse en el directorio del proyecto
 2. Ejecutar, desde la terminal:
   $> chmod u+x make.sh
   $>./make.sh
  
- #Ejecución
+ # Ejecución
  
- ####Server
+ #### Server
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd server/target/tpe-server-1.0-SNAPSHOT
     $> ./run-server.sh
@@ -22,7 +22,7 @@ El puerto default por el que escucha el servidor es el 1099. Si se quiere utiliz
     
         donde portNumber es el número de puerto por el que escuchará el servidor
     
-####Management Client
+#### Management Client
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd client/target/tpe-client-1.0-SNAPSHOT
     $> ./run-ManagementClient.sh -DserverAddress=xx.xx.xx.xx:yyyy -Daction=actionName 
@@ -35,7 +35,7 @@ Ejecutar en la terminal desde el directorio del proyecto:
                      ○ state ​: Consulta el estado de los comicios.
                      ○ close ​: Cierra los comicios.
                      
-#####Vote Client
+##### Vote Client
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd client/target/tpe-client-1.0-SNAPSHOT
     $> ./run-VoteClient.sh -DserverAddress=xx.xx.xx.xx:yyyy -DvotesPath=​fileName
@@ -45,7 +45,7 @@ Ejecutar en la terminal desde el directorio del proyecto:
                  votación.
                 - fileName ​ ​es el path del archivo csv de entrada con los votos de los ciudadanos
             
-#####Query Client
+##### Query Client
 Ejecutar en la terminal desde el directorio del proyecto:
     $> cd client/target/tpe-client-1.0-SNAPSHOT
     $> ./run-QueryClient.sh -DserverAddress=xx.xx.xx.xx:yyyy [ -Dstate= ​stateName ​| -Did= ​pollingPlaceNumber ​ ] -DoutPath=fileName
